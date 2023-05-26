@@ -3,28 +3,27 @@
 namespace Modules\Webmail\Providers;
 
 use Illuminate\Support\ServiceProvider;
+use Konekt\Gears\Defaults\SimpleSetting;
+use Konekt\Gears\Facades\Settings;
+use Konekt\Gears\UI\TreeBuilder;
 
-class WebmailSettingsServiceProvider extends ServiceProvider
-{
-    
+class WebmailSettingsServiceProvider extends ServiceProvider {
+
     /**
      * Bootstrap the module services.
      *
      * @return void
      */
-    public function boot()
-    {
-        // Your boot logic here
+    public function boot() {
 
-    }    
-        
+    }
+
     /**
      * Register the service provider.
      *
      * @return void
      */
-    public function register()
-    {
+    public function register() {
         //
     }
 
@@ -33,8 +32,8 @@ class WebmailSettingsServiceProvider extends ServiceProvider
      *
      * @return array
      */
-    public function provides()
-    {
+    public function provides() {
         return [];
     }
+
 }

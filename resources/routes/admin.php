@@ -10,3 +10,12 @@
 | contains the "web" "auth" and "role" middleware groups to lock them to the Admin.
 |
 */
+Route::group(['prefix' => 'mail'], function () {
+Route::get('/', 'WebmailController@index')->name('webmail.index');
+Route::get('/mailbox/{folder?}', 'WebmailController@mailbox')->name('webmail.mailbox');
+Route::get('/message/content', 'WebmailController@getMessageContent')->name('webmail.message.content');
+Route::get('/mailbox/{folder?}/{messageId}', 'WebmailController@show')->name('webmail.show');
+Route::get('/compose/{folder?}', 'WebmailController@compose')->name('webmail.compose');
+Route::post('/send', 'WebmailController@send')->name('webmail.send');
+
+});
