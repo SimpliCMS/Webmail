@@ -94,8 +94,10 @@
     </div>
 
     <div class="card-body flex-grow-1">
-        <p>From: {{ $message->getFrom()[0]->mail }}</p>
-        <p>To: {{ $message->getTo()[0]->mail }}</p>
+        <p>From: {{ $message->getFrom()[0]->personal }}&nbsp;{{ '<' . $message->getFrom()[0]->mail . '>' }}&nbsp;<a href="{{ route('webmail.address-book.create', ['email' => $message->getFrom()[0]->mail, 'name' => $message->getFrom()[0]->personal]) }}">
+    <i class="fas fa-address-book"></i> Add to Contacts
+</a></p>
+        <p>To: {{ $message->getTo()[0]->personal }}&nbsp;{{ '<' . $message->getTo()[0]->mail . '>' }}</p>
         <p>
             @php
             $messageDate = \Carbon\Carbon::parse($message->getDate());
@@ -106,7 +108,7 @@
         <hr>
         @if ($message->hasHTMLBody())
         <div class="message-container" style="max-height: 605px; overflow-y: auto;">
-            <iframe id="message-iframe" class="d-flex flex-column" srcdoc="{{ $message->getHTMLBody() }}" onload="resizeIframe(this)" style="width:100%;height:100%"></iframe>
+            <iframe id="message-iframe" class="d-flex flex-column" srcdoc="{{ $message->getHTMLBody() }}" style="width:100%;height:100%"></iframe>
         </div>
 
         <script>
@@ -122,7 +124,7 @@
         </script>
         @else
         <div class="message-container" style="max-height: 605px; overflow-y: auto;">
-            <iframe id="message-iframe" class="d-flex flex-column" srcdoc="{{ $message->getTextBody() }}" onload="resizeIframe(this)" style="width:100%;height:100%"></iframe>
+            <iframe id="message-iframe" class="d-flex flex-column" srcdoc="{{ $message->getTextBody() }}" style="width:100%;height:100%"></iframe>
         </div>
 
         <script>
@@ -139,3 +141,4 @@
         @endif
     </div>
 </div>
+

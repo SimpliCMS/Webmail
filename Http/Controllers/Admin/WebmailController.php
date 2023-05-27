@@ -8,12 +8,14 @@ use Webklex\IMAP\Facades\Client;
 use Webklex\IMAP\Message;
 use Webklex\IMAP\Exceptions\ImapServerErrorException;
 use Webklex\PHPIMAP\Support\FolderCollection;
+use Webklex\IMAP\Folder;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Auth;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
-use Swift_Message;
+use Modules\Webmail\Models\Account;
+use Modules\Webmail\Models\AddressBook;
 use Konekt\Gears\Facades\Preferences;
 use Modules\Core\Http\Controllers\Controller;
 
@@ -34,6 +36,15 @@ class WebmailController extends Controller {
             $account->password = Preferences::get('webmail.mail_password', $this->user);
 
             $this->imapClient = $account->connect();
+
+            $webmailAccount = Account::where('email', Preferences::get('webmail.mail_username', $this->user))->first();
+            // If the account doesn't exist, create a new one
+            if (!$webmailAccount) {
+                $webmailAccount = Account::create(['email' => Preferences::get('webmail.mail_username', $this->user), 'user_id' => $this->user->id]);
+                $addressBook = $webmailAccount->addressBook()->create([
+                    'account_id' => $webmailAccount->id,
+                ]);
+            }
             return $next($request);
         });
     }
@@ -43,7 +54,7 @@ class WebmailController extends Controller {
      * @return Renderable
      */
     public function index() {
-        return view('webmail-admin::index');
+        return view('webmail-admin::mail.index');
     }
 
     public function mailbox($folder = 'INBOX', Request $request) {
@@ -59,6 +70,17 @@ class WebmailController extends Controller {
             }
             return 1;
         });
+
+// Check if Archive folder already exists
+        $archiveFolderName = 'Archive';
+        $existingFolder = $folders->first(function ($folder) use ($archiveFolderName) {
+            return strtolower($folder->name) === strtolower($archiveFolderName);
+        });
+
+// Create Archive folder if it doesn't exist
+        if (!$existingFolder) {
+            $this->imapClient->createFolder($archiveFolderName);
+        }
 
         // Get the selected mailbox folder
         $selectedFolder = $folders->first(function ($item) use ($folder) {
@@ -78,8 +100,11 @@ class WebmailController extends Controller {
         }
 
         // Check if an AJAX request is made for loading the message content
-
-        return view('webmail-admin::mailbox', compact('folders', 'selectedFolder', 'messages', 'folder', 'activeMessageId'));
+        if ($request->ajax()) {
+            return view('webmail-admin::partials.mail.mailbox_content', compact('folders', 'selectedFolder', 'messages', 'folder', 'activeMessageId'));
+        } else {
+            return view('webmail-admin::mail.mailbox', compact('folders', 'selectedFolder', 'messages', 'folder', 'activeMessageId'));
+        }
     }
 
     /**
@@ -87,7 +112,7 @@ class WebmailController extends Controller {
      * @param int $id
      * @return Renderable
      */
-    public function show($folder = 'INBOX', $messageId) {
+    public function show($folder = 'INBOX', $messageId, Request $request) {
         $folders = $this->imapClient->getFolders();
         $folder = $this->imapClient->getFolder($folder);
         $selectedFolder = $folders->where('name', $folder)->first();
@@ -95,7 +120,11 @@ class WebmailController extends Controller {
         /** @var \Webklex\PHPIMAP\Support\MessageCollection $messages */
         $message = $folder->messages()->getMessageByUid($messageId);
         if ($message->getUid() == $messageId) {
-            return view('webmail-admin::show', compact('folders', 'selectedFolder', 'folder', 'message'));
+            if ($request->ajax()) {
+                return view('webmail-admin::partials.mail.message_content', compact('folders', 'selectedFolder', 'folder', 'message'));
+            } else {
+                return view('webmail-admin::mail.show', compact('folders', 'selectedFolder', 'folder', 'message'));
+            }
         } else {
             
         }
@@ -111,7 +140,7 @@ class WebmailController extends Controller {
         $user = Auth::user();
         $fromEmail = Preferences::get('webmail.mail_username', $user);
 
-        return view('webmail-admin::compose', compact('folders', 'selectedFolder', 'fromEmail', 'user'));
+        return view('webmail-admin::mail.compose', compact('folders', 'selectedFolder', 'fromEmail', 'user'));
     }
 
     public function reply($folder, $messageId) {
@@ -126,7 +155,7 @@ class WebmailController extends Controller {
         $user = Auth::user();
         $fromEmail = Preferences::get('webmail.mail_username', $user);
 
-        return view('webmail-admin::reply', compact('folders', 'selectedFolder', 'fromEmail', 'user', 'message'));
+        return view('webmail-admin::mail.reply', compact('folders', 'selectedFolder', 'fromEmail', 'user', 'message'));
     }
 
     public function forward($folder, $messageId) {
@@ -141,7 +170,7 @@ class WebmailController extends Controller {
         $user = Auth::user();
         $fromEmail = Preferences::get('webmail.mail_username', $user);
 
-        return view('webmail-admin::forward', compact('folders', 'selectedFolder', 'fromEmail', 'user', 'message'));
+        return view('webmail-admin::mail.forward', compact('folders', 'selectedFolder', 'fromEmail', 'user', 'message'));
     }
 
     public function move($folder, $messageId, $targetFolder) {
@@ -162,29 +191,45 @@ class WebmailController extends Controller {
         return redirect()->back()->with('success', 'Message moved successfully!');
     }
 
-    public function addFolder(Request $request)
-{
-    $this->validate($request, [
-        'folderName' => 'required'
-    ]);
+    public function addFolder(Request $request) {
+        $this->validate($request, [
+            'folderName' => 'required'
+        ]);
 
-    $folderName = $request->input('folderName');
+        $folderName = $request->input('folderName');
 
-    try {
+        try {
 
-        // Create the folder
-        $folder = $this->imapClient->createFolder($folderName);
+            // Create the folder
+            $folder = $this->imapClient->createFolder($folderName);
 
-        // Close the connection
-        $this->imapClient->disconnect();
+            // Close the connection
+            $this->imapClient->disconnect();
 
-        // Redirect or display success message
-        return redirect()->back()->with('success', 'Folder created successfully');
-    } catch (\Exception $e) {
-        // Handle connection or folder creation error
-        return redirect()->back()->with('error', 'Failed to create the folder');
+            // Redirect or display success message
+            return redirect()->back()->with('success', 'Folder created successfully');
+        } catch (\Exception $e) {
+            // Handle connection or folder creation error
+            return redirect()->back()->with('error', 'Failed to create the folder');
+        }
     }
-}
+
+    public function deleteFolder($targetFolder) {
+        try {
+
+
+            $folder = $this->imapClient->deleteFolder($targetFolder);
+
+            // Close the connection
+            $this->imapClient->disconnect();
+
+            // Redirect or display success message
+            return redirect()->back()->with('success', 'Folder deleted successfully');
+        } catch (\Exception $e) {
+            // Handle connection or folder creation error
+            return redirect()->route('webmail.index')->with('error', 'Failed to delete the folder');
+        }
+    }
 
     public function markAsRead($messageId) {
         $message = $this->imapClient->getFolder('INBOX')->query()->find($messageId);

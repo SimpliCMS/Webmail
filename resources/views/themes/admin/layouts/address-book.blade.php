@@ -7,39 +7,6 @@
         <link href="{{ themes('css/bootstrap.css') }}" rel="stylesheet">
         @stack('style')
         <link href="{{ themes('css/custom.css') }}" rel="stylesheet">
-        <style>
-            .message-container {
-                position: relative;
-                width: 100%;
-                padding-bottom: 65%; /* Adjust the aspect ratio based on your needs */
-                overflow: hidden;
-            }
-
-            .message-container iframe {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                border: none;
-            }
-
-            .list-group-item-action:active {
-                color: #fff;
-                background-color: #665E77;
-            }
-            .list-group-item .delete-link {
-                display: none;
-            }
-
-            .list-group-item:hover .delete-link {
-                display: inline;
-            }
-
-            .delete-link {
-                margin-left: auto;
-            }
-        </style>
     </head>
     <body>
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
@@ -92,10 +59,10 @@
         </nav>
 
         <div class="container-fluid mt-1">
-            <a class="btn btn-primary" href="{{ route('webmail.compose', ['folder' => 'INBOX']) }}" role="button">Compose Mail</a>
+            <a class="btn btn-primary" href="{{ route('webmail.address-book.create') }}" role="button">Add New Entry</a>
             <div class="row mt-1">
                 <div class="col-md-2">
-                    @include('webmail-admin::partials.mail.sidebar', ['folders' => $folders])
+                    @include('webmail-admin::partials.address-book.sidebar')
                 </div>
                 @yield('content')
             </div>

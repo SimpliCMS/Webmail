@@ -17,7 +17,7 @@
         <ul class="list-group">
             <!-- Sort the folders by name -->
             @php
-                $sortedFolders = $folders->sortBy('name');
+            $sortedFolders = $folders->sortBy('name');
             @endphp
 
             <!-- INBOX -->
@@ -45,7 +45,7 @@
                 <span class="badge bg-primary">{{ $sentFolder->search()->unseen()->setFetchBody(false)->count() }}</span>
             </li>
             @endif
-
+            
             <!-- Drafts -->
             @php
             $draftsFolder = $sortedFolders->where('name', 'Drafts')->first();
@@ -89,13 +89,23 @@
             @foreach ($sortedFolders as $folder)
             @if (!in_array($folder->name, ['INBOX', 'Sent', 'Drafts', 'Junk', 'Trash']))
             <li class="list-group-item {{ $selectedFolder && $folder->name === $selectedFolder->name ? 'active' : '' }}">
-                <a href="{{ route('webmail.mailbox', $folder->name) }}" class="{{ $selectedFolder && $folder->name === $selectedFolder->name ? 'text-white' : '' }}">
-                    {{ $folder->name }}
-                </a>
-                <span class="badge bg-primary">{{ $folder->search()->unseen()->setFetchBody(false)->count() }}</span>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <a href="{{ route('webmail.mailbox', $folder->name) }}" class="{{ $selectedFolder && $folder->name === $selectedFolder->name ? 'text-white' : '' }}">
+                            {{ $folder->name }}
+                        </a>
+                        <span class="badge bg-primary">{{ $folder->search()->unseen()->setFetchBody(false)->count() }}</span>
+                    </div>
+                    <form id="delete-form" action="{{ route('webmail.deleteFolder', ['targetFolder' => $folder->name]) }}" method="POST" style="display:inline;">
+                        @csrf
+                        <button href="#" type="submit" name="targetFolder" value="{{ $folder->name }}" class="btn btn-link p-0 m-0 border-0 shadow-none delete-link {{ $selectedFolder && $folder->name === $selectedFolder->name ? 'text-white' : '' }}">Delete</button>
+                    </form>
+                </div>
             </li>
             @endif
             @endforeach
+
+
         </ul>
         @else
         <p>No folders found</p>

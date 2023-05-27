@@ -3,7 +3,7 @@
 @section('content')
 <div class="col-md-8">
     <div class="card">
-        <div class="card-header">Compose Message</div>
+        <div class="card-header">Forward Message</div>
         <div class="card-body">
             <form method="POST" action="{{ route('webmail.sendReply', ['originalMessage' => $message->getUid()]) }}">
                 @csrf
