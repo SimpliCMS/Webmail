@@ -11,7 +11,7 @@
             .message-container {
                 position: relative;
                 width: 100%;
-                padding-bottom: 75%; /* Adjust the aspect ratio based on your needs */
+                padding-bottom: 65%; /* Adjust the aspect ratio based on your needs */
                 overflow: hidden;
             }
 
@@ -22,6 +22,11 @@
                 width: 100%;
                 height: 100%;
                 border: none;
+            }
+
+            .list-group-item-action:active {
+                color: #fff;
+                background-color: #665E77;
             }
         </style>
     </head>
@@ -38,6 +43,30 @@
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('webmail.mailbox') }}">Inbox</a>
                         </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
+                               id="account-dropdown-link">
+                                <img src="{{ Auth::user()->profile->getProfileAvatar() }}" class="rounded-circle" style="width: 20px;">
+
+                                    {{ Auth::user()->name }}
+
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="account-dropdown-link">
+                                <li><a class="dropdown-item" href="{{ route('admin.index') }}">{{ __('Return to Admin') }}</a></li>
+                                <li><a class="dropdown-item" href="{{ route('appshell.account.display') }}">{{ __('Account') }}</a></li>
+                                <li><a class="dropdown-item" href="{{ route('appshell.preferences.index') }}">{{ __('Preferences') }}</a></li>
+                                <li>
+                                    <a class="dropdown-item" href="{{ route($appshell->routes['logout']) }}"
+                                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                        {{ __('Logout') }}
+                                    </a>
+                                    <form id="logout-form" action="{{ route($appshell->routes['logout']) }}" method="POST" style="display: none;">
+                                        {{ csrf_field() }}
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+
                         <!-- Add more menu items as needed -->
                     </ul>
                 </div>
@@ -47,14 +76,10 @@
         <div class="container-fluid mt-1">
             <a class="btn btn-primary" href="{{ route('webmail.compose', ['folder' => 'INBOX']) }}" role="button">Compose Mail</a>
             <div class="row mt-1">
-                <div class="col-md-3">
+                <div class="col-md-2">
                     @include('webmail-admin::partials.sidebar', ['folders' => $folders])
                 </div>
-                <div class="col-md-9">
-                    <div class="content">
-                        @yield('content')
-                    </div>
-                </div>
+                @yield('content')
             </div>
         </div>
 

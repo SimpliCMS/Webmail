@@ -8,12 +8,11 @@ use Webklex\IMAP\Facades\Client;
 use Webklex\IMAP\Message;
 use Webklex\IMAP\Exceptions\ImapServerErrorException;
 use Webklex\PHPIMAP\Support\FolderCollection;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Auth;
-use Symfony\Component\Mime\Address;
-use Symfony\Component\Mime\Header\Headers;
-use Symfony\Component\Mime\Header\MailboxListHeader;
-use Symfony\Component\Mime\Part\TextPart;
+use PHPMailer\PHPMailer\Exception;
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\SMTP;
 use Swift_Message;
 use Konekt\Gears\Facades\Preferences;
 use Modules\Core\Http\Controllers\Controller;
@@ -72,9 +71,15 @@ class WebmailController extends Controller {
             $messages = $selectedFolder->messages()->all()->get();
         }
 
+        // Set the active message ID
+        $activeMessageId = null;
+        if ($request->has('messageId')) {
+            $activeMessageId = $request->input('messageId');
+        }
+
         // Check if an AJAX request is made for loading the message content
 
-        return view('webmail-admin::mailbox', compact('folders', 'selectedFolder', 'messages', 'folder'));
+        return view('webmail-admin::mailbox', compact('folders', 'selectedFolder', 'messages', 'folder', 'activeMessageId'));
     }
 
     /**
@@ -82,24 +87,17 @@ class WebmailController extends Controller {
      * @param int $id
      * @return Renderable
      */
-    public function show($folder, $messageId) {
+    public function show($folder = 'INBOX', $messageId) {
         $folders = $this->imapClient->getFolders();
+        $folder = $this->imapClient->getFolder($folder);
         $selectedFolder = $folders->where('name', $folder)->first();
-
-        foreach ($folders as $folder) {
-
-            //Get all Messages of the current Mailbox $folder
-            /** @var \Webklex\PHPIMAP\Support\MessageCollection $messages */
-            $messages = $folder->messages()->all()->get();
-            foreach ($messages as $message) {
-
-                //Move the current Message to 'INBOX.read'
-                if ($message->message_id == $messageId) {
-                    return view('webmail-admin::show', compact('folders', 'selectedFolder', 'message'));
-                } else {
-                    
-                }
-            }
+        //Get all Messages of the current Mailbox $folder
+        /** @var \Webklex\PHPIMAP\Support\MessageCollection $messages */
+        $message = $folder->messages()->getMessageByUid($messageId);
+        if ($message->getUid() == $messageId) {
+            return view('webmail-admin::show', compact('folders', 'selectedFolder', 'folder', 'message'));
+        } else {
+            
         }
         // Handle the case when the message is not found
         // For example, redirect back with an error message
@@ -116,22 +114,77 @@ class WebmailController extends Controller {
         return view('webmail-admin::compose', compact('folders', 'selectedFolder', 'fromEmail', 'user'));
     }
 
-    public function getMessageContent(Request $request) {
-        $messageId = $request->input('messageId');
+    public function reply($folder, $messageId) {
+        $folders = $this->imapClient->getFolders();
+        $folder = $this->imapClient->getFolder($folder);
+        $selectedFolder = $folders->where('name', $folder)->first();
 
-        // Find the message with the specified message ID
-        $message = Message::where('message_id', $messageId)->first();
+        // Get the original message
+        $message = $folder->messages()->getMessageByUid($messageId);
 
-        if ($message) {
-            // Retrieve the message content
-            $content = $message->getHTMLBody(); // Adjust the method based on your library or message format (e.g., getHTMLBody, getTextBody, etc.)
-            // Return the message content
-            return response()->json(['content' => $content]);
+        // Get the current user's email
+        $user = Auth::user();
+        $fromEmail = Preferences::get('webmail.mail_username', $user);
+
+        return view('webmail-admin::reply', compact('folders', 'selectedFolder', 'fromEmail', 'user', 'message'));
+    }
+
+    public function forward($folder, $messageId) {
+        $folders = $this->imapClient->getFolders();
+        $folder = $this->imapClient->getFolder($folder);
+        $selectedFolder = $folders->where('name', $folder)->first();
+
+        // Get the original message
+        $message = $folder->messages()->getMessageByUid($messageId);
+
+        // Get the current user's email
+        $user = Auth::user();
+        $fromEmail = Preferences::get('webmail.mail_username', $user);
+
+        return view('webmail-admin::forward', compact('folders', 'selectedFolder', 'fromEmail', 'user', 'message'));
+    }
+
+    public function move($folder, $messageId, $targetFolder) {
+        $folders = $this->imapClient->getFolders();
+        $folder = $this->imapClient->getFolder($folder);
+        $selectedFolder = $folders->where('name', $folder)->first();
+
+        // Get the target folder
+        // Get the message
+        $message = $folder->query()->getMessageByUid($messageId);
+
+        if ($message->getUid() == $messageId) {
+            $message->move($targetFolder);
+        } else {
+            // Handle error or display a message
         }
 
-        // Handle the case when the message is not found
-        return response()->json(['error' => 'Message not found'], 404);
+        return redirect()->back()->with('success', 'Message moved successfully!');
     }
+
+    public function addFolder(Request $request)
+{
+    $this->validate($request, [
+        'folderName' => 'required'
+    ]);
+
+    $folderName = $request->input('folderName');
+
+    try {
+
+        // Create the folder
+        $folder = $this->imapClient->createFolder($folderName);
+
+        // Close the connection
+        $this->imapClient->disconnect();
+
+        // Redirect or display success message
+        return redirect()->back()->with('success', 'Folder created successfully');
+    } catch (\Exception $e) {
+        // Handle connection or folder creation error
+        return redirect()->back()->with('error', 'Failed to create the folder');
+    }
+}
 
     public function markAsRead($messageId) {
         $message = $this->imapClient->getFolder('INBOX')->query()->find($messageId);
@@ -147,44 +200,143 @@ class WebmailController extends Controller {
 
     public function send(Request $request) {
         $this->validate($request, [
-            'to' => 'required|email',
+            'toEmail' => 'required|email',
             'subject' => 'required',
             'message' => 'required',
         ]);
 
-        $to = $request->input('to');
-        $subject = $request->input('subject');
-        $message = $request->input('message');
+        // Create a new PHPMailer instance
+        $mail = new PHPMailer(true);
 
-        $fromEmail = Preferences::get('webmail.mail_username', $this->user);
-        $fromName = $this->user->name;
+        try {
+            // SMTP configuration
+            $mail->isSMTP();
+            $mail->isHTML(true);
+            $mail->Host = Config::get('mail.host');
+            $mail->Port = Config::get('mail.port');
+            $mail->SMTPAuth = true;
+            $mail->Username = Config::get('mail.username');
+            $mail->Password = Config::get('mail.password');
 
-        $data = [
-            'to' => $to,
-            'subject' => $subject,
-            'message' => $message,
-        ];
+            // Set the email details
+            $mail->setFrom(Preferences::get('webmail.mail_username', $this->user), $this->user->name);
+            $mail->addAddress($request->input('toEmail'));
+            $mail->Subject = $request->input('subject');
+            $mail->Body = $request->input('message');
 
-        Mail::send('webmail-admin::send', $data, function ($message) use ($to, $subject, $fromEmail, $fromName) {
-            $message->to($to)
-                    ->subject($subject)
-                    ->from($fromEmail, $fromName)
-                    ->setBody($data['message'], 'text/html');
-        });
+            // Send the email
+            $mail->send();
 
-        return redirect()->back()->with('success', 'Email sent successfully!');
+            // Save the sent email to the "Sent" folder
+            $path = "Sent"; // Specify the folder where you want to save the sent email
+            $message = $mail->getSentMIMEMessage();
+
+            // Open the connection to the IMAP server
+            $imapStream = imap_open("{" . Preferences::get('webmail.mail_host', $this->user) . ":" . Preferences::get('webmail.mail_port', $this->user) . "/imap/notls}" . $path, Preferences::get('webmail.mail_username', $this->user), Preferences::get('webmail.mail_password', $this->user));
+
+            // Check if the connection was successful
+            if ($imapStream) {
+                // Save the email to the specified folder
+                imap_append($imapStream, "{" . Preferences::get('webmail.mail_host', $this->user) . ":" . Preferences::get('webmail.mail_port', $this->user) . "/imap/notls}" . $path, $message);
+
+                // Close the IMAP connection
+                imap_close($imapStream);
+
+                return redirect()->back()->with('success', 'Email sent and saved to Sent folder!');
+            } else {
+                // Failed to connect to the IMAP server
+                return redirect()->back()->with('error', 'Failed to connect to the IMAP server');
+            }
+        } catch (Exception $e) {
+            echo 'Failed to send email. Error: ' . $mail->ErrorInfo;
+        }
     }
 
-    public function delete($messageId) {
-        $message = $this->imapClient->getFolder('INBOX')->query()->find($messageId);
+    public function sendReply(Request $request) {
+        $this->validate($request, [
+            'toEmail' => 'required|email',
+            'subject' => 'required',
+            'message' => 'required',
+        ]);
 
-        if (!$message) {
-            return response()->json(['error' => 'Message not found'], 404);
+        // Create a new PHPMailer instance
+        $mail = new PHPMailer(true);
+
+        try {
+            // SMTP configuration
+            $mail->isSMTP();
+            $mail->isHTML(true);
+            $mail->Host = Config::get('mail.host');
+            $mail->Port = Config::get('mail.port');
+            $mail->SMTPAuth = true;
+            $mail->Username = Config::get('mail.username');
+            $mail->Password = Config::get('mail.password');
+
+            // Set the email details
+            $mail->setFrom(Preferences::get('webmail.mail_username', $this->user), $this->user->name);
+            $mail->addAddress($request->input('toEmail'));
+            $mail->Subject = $request->input('subject');
+            $mail->Body = $request->input('message');
+
+            // Set the appropriate headers for replying
+            $mail->addCustomHeader('In-Reply-To', $originalMessage->getMessageId());
+            $mail->addCustomHeader('References', $originalMessage->getMessageId());
+
+            // Send the email
+            $mail->send();
+
+            // Save the sent email to the "Sent" folder
+            $path = "Sent"; // Specify the folder where you want to save the sent email
+            $message = $mail->getSentMIMEMessage();
+
+            // Open the connection to the IMAP server
+            $imapStream = imap_open("{" . Preferences::get('webmail.mail_host', $this->user) . ":" . Preferences::get('webmail.mail_port', $this->user) . "/imap/notls}" . $path, Preferences::get('webmail.mail_username', $this->user), Preferences::get('webmail.mail_password', $this->user));
+
+            // Check if the connection was successful
+            if ($imapStream) {
+                // Save the email to the specified folder
+                imap_append($imapStream, "{" . Preferences::get('webmail.mail_host', $this->user) . ":" . Preferences::get('webmail.mail_port', $this->user) . "/imap/notls}" . $path, $message);
+
+                // Close the IMAP connection
+                imap_close($imapStream);
+
+                return redirect()->back()->with('success', 'Email sent and saved to Sent folder!');
+            } else {
+                // Failed to connect to the IMAP server
+                return redirect()->back()->with('error', 'Failed to connect to the IMAP server');
+            }
+        } catch (Exception $e) {
+            echo 'Failed to send email. Error: ' . $mail->ErrorInfo;
+        }
+    }
+
+    public function trash($folder, $messageId) {
+        $folder = $this->imapClient->getFolder($folder);
+
+        // Get the message by UID
+        $message = $folder->messages()->getMessageByUid($messageId);
+
+        $message->move($folder_path = 'Trash');
+
+        return redirect()->back()->with('success', 'Email moved to Trash!');
+    }
+
+    public function delete($folder, $messageId) {
+        $folders = $this->imapClient->getFolders();
+        $folder = $this->imapClient->getFolder($folder);
+        $selectedFolder = $folders->where('name', $folder)->first();
+
+        //Get all Messages of the current Mailbox $folder
+        /** @var \Webklex\PHPIMAP\Support\MessageCollection $messages */
+        $message = $folder->query()->getMessageByUid($messageId);
+
+        if ($message->getUid() == $messageId) {
+            $message->delete();
+        } else {
+            
         }
 
-        $message->delete();
-
-        return response()->json(['success' => true]);
+        return redirect()->back()->with('success', 'Email sent successfully!');
     }
 
 }

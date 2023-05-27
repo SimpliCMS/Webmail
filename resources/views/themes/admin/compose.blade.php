@@ -1,8 +1,6 @@
 @extends('webmail-admin::layouts.mail', ['folders' => $folders])
 
 @section('content')
-    <div class="container">
-        <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="card">
                     <div class="card-header">Compose Message</div>
@@ -35,7 +33,5 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
+@include('webmail-admin::partials.tinymce._editor', ['selector' => 'message','height' => '500'])
 @endsection
-
