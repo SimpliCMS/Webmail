@@ -6,7 +6,7 @@
         <div class="card-header">
             <h3>Edit Contact</h3>
         </div>
-        <div class="card-body">
+        <div class="card-body ps-3 pe-3 pb-3 pt-3">
             <form action="{{ route('webmail.address-book.update', $entry) }}" method="POST">
                 @csrf
                 @method('PUT')

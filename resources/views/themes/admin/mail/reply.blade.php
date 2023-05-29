@@ -4,7 +4,7 @@
 <div class="col-md-8">
     <div class="card">
         <div class="card-header">Reply to Message</div>
-        <div class="card-body">
+        <div class="card-body ps-3 pe-3 pb-3 pt-3">
             <form method="POST" action="{{ route('webmail.sendReply', ['originalMessage' => $message->getUid()]) }}">
                 @csrf
 

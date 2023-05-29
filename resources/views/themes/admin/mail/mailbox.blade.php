@@ -25,7 +25,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="d-flex">
                                 <i class="far fa-envelope {{ ($message->hasFlag('\\Seen') && $activeMessageId == $message->getUid()) ? 'text-white' : ($message->hasFlag('\\Seen') ? 'seen text-muted' : 'unseen text-primary') }} me-2" data-message-id="{{ $message->getUid() }}"></i>
-                                <img src="{{ getLogo($message->getFrom()[0]->mail, $message->getFrom()[0]->personal) }}" alt="Logo/Avatar" class="avatar rounded-circle" style="width: 40px; margin-right: 10px;">
+                                <div class="avatar-container"><img src="{{ getLogo($message->getFrom()[0]->mail, $message->getFrom()[0]->personal) }}" alt="Logo/Avatar" class="avatar" style="margin-right: 10px;"></div>
                                 <div>
                                     <div>{{ $message->subject }}</div>
                                     <div>{{ $message->getFrom()[0]->mail }}</div>
@@ -35,7 +35,12 @@
                                 <i class="far fa-clock me-2"></i>
                                 @php
                                 $messageDate = \Carbon\Carbon::parse($message->getDate());
-                                $formattedDate = $messageDate->isToday() ? $messageDate->format('h:i A') : $messageDate->format('F j, Y h:i A');
+                                $formattedDate = $messageDate->isToday() ? $messageDate->format('h:i A') : $messageDate->format('F j');
+                                if ($messageDate->isCurrentYear()) {
+                                $formattedDate .= ', ' . $messageDate->format('h:i A');
+                                } else {
+                                $formattedDate .= ', ' . $messageDate->format('Y h:i A');
+                                }
                                 @endphp
                                 <span>{{ $formattedDate }}</span>
                                 <i class="far fa-trash-alt ms-3"></i>
@@ -44,11 +49,11 @@
                     </a>
                     @endforeach
                     @else
-                    <p>No messages found</p>
+                    <p class="ps-2">No messages found</p>
                     @endif
 
                     @else
-                    <p>No folder selected</p>
+                    <p class="ps-2">No folder selected</p>
                     @endif
                 </div>
             </div>

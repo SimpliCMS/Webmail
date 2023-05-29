@@ -48,7 +48,7 @@ function getLogo($fromEmail, $fromName) {
     }
 
     // BIMI logo not found, try Clearbit logo API
-    $clearbitLogoUrl = 'https://logo.clearbit.com/' . $baseDomain . '?size=200';
+    $clearbitLogoUrl = 'https://logo.clearbit.com/' . $baseDomain . '?size=200&format=jpg';
     $logoResponse = Http::get($clearbitLogoUrl);
 
     if ($logoResponse->ok()) {

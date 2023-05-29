@@ -1,15 +1,21 @@
 .card {
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
-    padding: 20px;
+    padding: 0px;
     margin-bottom: 10px;
 }
-
+.card-body {
+    -webkit-box-flex: 1;
+    -ms-flex: 1 1 auto;
+    flex: 1 1 auto;
+    padding: 0;
+    color: var(--bs-card-color);
+}
 .card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 0px;
     background-color: transparent; /* Remove background color */
 }
 
@@ -41,10 +47,17 @@
     box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
     border-radius: 10px;
     padding: 0px;
-    margin-bottom: 10px;
 }
 .sidebar .list-group {
     border-radius: 0;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+}
+
+#mailbox-container-content .list-group {
+    border-radius: 0;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
 }
 .list-group-item-action:active {
     color: #fff;
@@ -74,7 +87,7 @@
 .details-container {
     display: flex;
     align-items: center;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .details p {
@@ -85,7 +98,7 @@
 .message-container {
     position: relative;
     width: 100%;
-    padding-bottom: 63%; /* Adjust the aspect ratio based on your needs */
+    padding-bottom: 70%; /* Adjust the aspect ratio based on your needs */
     overflow: hidden;
 }
 .message-container iframe {

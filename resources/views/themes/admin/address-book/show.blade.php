@@ -6,7 +6,7 @@
         <div class="card-header">
             <h3 class="text-center">Contact Details</h3>
         </div>
-        <div class="card-body">
+        <div class="card-body mt-1 ps-3 pe-3 pb-3">
             <div class="text-center">
                 <img src="{{ getLogo($entry->email, $entry->name) }}" alt="Logo/Avatar" class="rounded-circle" style="width: 200px;">
             </div>

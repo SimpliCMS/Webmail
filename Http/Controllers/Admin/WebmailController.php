@@ -260,7 +260,7 @@ class WebmailController extends Controller {
         // Get the message by UID
         $message = $folder->messages()->getMessageByUid($messageId);
 
-        $message->getFlag('SEEN');
+        $message->setFlag('SEEN');
 
         return response()->json(['success' => true]);
     }

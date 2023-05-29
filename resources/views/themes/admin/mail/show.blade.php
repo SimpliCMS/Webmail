@@ -15,17 +15,17 @@
                     @php
                     $currentFolder = request()->route('folder');
                     $sortedFolders = $folders->reject(function ($folder) use ($currentFolder) {
-                        return in_array($folder->name, [$currentFolder, 'Sent', 'Trash']);
+                    return in_array($folder->name, [$currentFolder, 'Sent', 'Trash']);
                     })->sortBy(function ($folder) {
-                        switch ($folder->name) {
-                            case 'INBOX':
-                                return 1; // Sort INBOX first
-                            case 'Drafts':
-                            case 'Junk':
-                                return 2; // Sort Drafts and Junk next
-                            default:
-                                return 3; // Sort other folders last
-                        }
+                    switch ($folder->name) {
+                    case 'INBOX':
+                    return 1; // Sort INBOX first
+                    case 'Drafts':
+                    case 'Junk':
+                    return 2; // Sort Drafts and Junk next
+                    default:
+                    return 3; // Sort other folders last
+                    }
                     });
                     @endphp
 
@@ -60,7 +60,7 @@
 
                     {{-- Display other folders --}}
                     @foreach ($sortedFolders->reject(function ($folder) {
-                        return in_array($folder->name, ['INBOX', 'Drafts', 'Junk']);
+                    return in_array($folder->name, ['INBOX', 'Drafts', 'Junk']);
                     })->sortBy('name') as $folder)
                     <form action="{{ route('webmail.move', ['folder' => $currentFolder, 'messageId' => $message->getUid(), 'targetFolder' => $folder->name]) }}" method="POST" style="display:inline;">
                         @csrf
@@ -95,22 +95,27 @@
         </div>
     </div>
 
-    <div class="card-body flex-grow-1">
+    <div class="card-body flex-grow-1 mt-1">
         <div class="details-container">
             <div class="avatar-container">
                 <img class="avatar" src="{{ getLogo($message->getFrom()[0]->mail, $message->getFrom()[0]->personal) }}" alt="Avatar">
             </div>
             <div class="details">
                 <p>From: {{ $message->getFrom()[0]->full }}&nbsp;<a href="{{ route('webmail.address-book.create', ['email' => $message->getFrom()[0]->mail, 'name' => $message->getFrom()[0]->personal]) }}">
-                    <i class="fas fa-address-book"></i> Add to Contacts
-                </a></p>
+                        <i class="fas fa-address-book"></i> Add to Contacts
+                    </a></p>
                 <p>To: {{ $message->getTo()[0]->full }}</p>
             </div>
         </div>
         <p>
             @php
             $messageDate = \Carbon\Carbon::parse($message->getDate());
-            $formattedDate = $messageDate->isToday() ? $messageDate->format('h:i A') : $messageDate->format('F j, Y h:i A');
+            $formattedDate = $messageDate->isToday() ? $messageDate->format('h:i A') : $messageDate->format('F j');
+            if ($messageDate->isCurrentYear()) {
+            $formattedDate .= ', ' . $messageDate->format('h:i A');
+            } else {
+            $formattedDate .= ', ' . $messageDate->format('Y h:i A');
+            }
             @endphp
             {{ $formattedDate }}
         </p>

@@ -6,7 +6,7 @@
         <div class="card-header">
             <h3>Create New Contact</h3>
         </div>
-        <div class="card-body">
+        <div class="card-body ps-3 pe-3 pb-3 pt-3">
             <form action="{{ route('webmail.address-book.store') }}" method="POST">
                 @csrf
                 <div class="mb-3">
