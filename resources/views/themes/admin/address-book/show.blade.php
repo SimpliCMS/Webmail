@@ -8,7 +8,7 @@
         </div>
         <div class="card-body">
             <div class="text-center">
-                <img src="{{ getBimiLogo($entry->email, $entry->name) }}" alt="Logo/Avatar" class="rounded-circle" style="width: 200px;">
+                <img src="{{ getLogo($entry->email, $entry->name) }}" alt="Logo/Avatar" class="rounded-circle" style="width: 200px;">
             </div>
             <h6>General Details</h6>
             <h5 class="mt-4">Name: {{ $entry->name }}</h5>

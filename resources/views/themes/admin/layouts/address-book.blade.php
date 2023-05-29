@@ -4,6 +4,7 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>@hasSection('title')@yield('title') &middot; @endif{{ config('app.name', 'SimpliCMS') }}</title>
+        @include('layouts._favicons')
         <link href="{{ themes('css/bootstrap.css') }}" rel="stylesheet">
         @stack('style')
         <link href="{{ themes('css/custom.css') }}" rel="stylesheet">

@@ -13,7 +13,7 @@
             <ul class="list-group">
                 @foreach ($addressBook->entries as $entry)
                 <li class="list-group-item d-flex align-items-center">
-                    <img src="{{ getBimiLogo($entry->email, $entry->name) }}" alt="Avatar" class="rounded-circle me-3" style="width: 50px;">
+                    <img src="{{ getLogo($entry->email, $entry->name) }}" alt="Avatar" class="rounded-circle me-3" style="width: 50px;">
                     <div>
                         <h5>{{ $entry->name }}</h5>
                         <p>{{ $entry->email }}</p>

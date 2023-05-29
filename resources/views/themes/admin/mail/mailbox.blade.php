@@ -25,7 +25,7 @@
                         <div class="d-flex justify-content-between align-items-center">
                             <div class="d-flex">
                                 <i class="far fa-envelope {{ ($message->hasFlag('\\Seen') && $activeMessageId == $message->getUid()) ? 'text-white' : ($message->hasFlag('\\Seen') ? 'seen text-muted' : 'unseen text-primary') }} me-2" data-message-id="{{ $message->getUid() }}"></i>
-                                <img src="{{ getBimiLogo($message->getFrom()[0]->mail, $message->getFrom()[0]->personal) }}" alt="Logo/Avatar" class="rounded-circle" style="width: 40px; margin-right: 10px;">
+                                <img src="{{ getLogo($message->getFrom()[0]->mail, $message->getFrom()[0]->personal) }}" alt="Logo/Avatar" class="avatar rounded-circle" style="width: 40px; margin-right: 10px;">
                                 <div>
                                     <div>{{ $message->subject }}</div>
                                     <div>{{ $message->getFrom()[0]->mail }}</div>
@@ -33,7 +33,6 @@
                             </div>
                             <div class="d-flex align-items-center mt-4">
                                 <i class="far fa-clock me-2"></i>
-                                <!-- Replace with message time -->
                                 @php
                                 $messageDate = \Carbon\Carbon::parse($message->getDate());
                                 $formattedDate = $messageDate->isToday() ? $messageDate->format('h:i A') : $messageDate->format('F j, Y h:i A');
@@ -204,32 +203,6 @@
             loadMailboxPoll(currentFolder);
         }
 
-        $('.trash-form').submit(function (e) {
-            $.ajaxSetup({
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                }
-            });
-            e.preventDefault(); // Prevent the default form submission
-
-            var form = $(this);
-
-            $.ajax({
-                url: form.attr('action'),
-                type: 'POST', // Use POST method since it's a form submission
-                dataType: 'json',
-                data: form.serialize(), // Serialize the form data
-                success: function (response) {
-                    // Handle the success response here
-                    console.log('Trash action completed successfully');
-                    loadMailbox(folderName);
-                },
-                error: function () {
-                    // Handle the error response here
-                    console.log('Error occurred while trashing');
-                }
-            });
-        });
 // Call the polling function initially
         pollMailbox();
 

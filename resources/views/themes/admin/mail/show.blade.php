@@ -98,7 +98,7 @@
     <div class="card-body flex-grow-1">
         <div class="details-container">
             <div class="avatar-container">
-                <img class="avatar" src="{{ getBimiLogo($message->getFrom()[0]->mail, $message->getFrom()[0]->personal) }}" alt="Avatar">
+                <img class="avatar" src="{{ getLogo($message->getFrom()[0]->mail, $message->getFrom()[0]->personal) }}" alt="Avatar">
             </div>
             <div class="details">
                 <p>From: {{ $message->getFrom()[0]->full }}&nbsp;<a href="{{ route('webmail.address-book.create', ['email' => $message->getFrom()[0]->mail, 'name' => $message->getFrom()[0]->personal]) }}">

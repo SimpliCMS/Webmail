@@ -19,7 +19,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex">
                         <i class="far fa-envelope {{ ($message->hasFlag('\\Seen') && $activeMessageId == $message->getUid()) ? 'text-white' : ($message->hasFlag('\\Seen') ? 'seen text-muted' : 'unseen text-primary') }} me-2" data-message-id="{{ $message->getUid() }}"></i>                        
-                        <img src="{{ getBimiLogo($message->getFrom()[0]->mail, $message->getFrom()[0]->personal) }}" alt="Logo/Avatar" class="rounded-circle" style="width: 40px; margin-right: 10px;">
+                        <img src="{{ getLogo($message->getFrom()[0]->mail, $message->getFrom()[0]->personal) }}" alt="Logo/Avatar" class="avatar rounded-circle" style="width: 40px; margin-right: 10px;">
                         <div>
                             <div>{{ $message->subject }}</div>
                             <div>{{ $message->getFrom()[0]->mail }}</div>
