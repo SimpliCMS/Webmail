@@ -19,6 +19,7 @@ Route::get('/mailbox', function () {
 })->name('webmail.mailbox.default');
 Route::get('/mailbox/{folder?}', 'WebmailController@mailbox')->name('webmail.mailbox');
 Route::get('/message/content', 'WebmailController@getMessageContent')->name('webmail.message.content');
+Route::get('/mailbox/{folderName}/count', 'WebmailController@pollFolders')->name('webmail.pollFolders');
 Route::get('/mailbox/{folder?}/{messageId}', 'WebmailController@show')->name('webmail.show');
 Route::post('/webmail/add-folder', 'WebmailController@addFolder')->name('webmail.addFolder');
 Route::post('/webmail/delete-folder/{targetFolder}', 'WebmailController@deleteFolder')->name('webmail.deleteFolder');
@@ -33,12 +34,12 @@ Route::post('/delete/{folder?}/{messageId}', 'WebmailController@delete')->name('
 
 
 // View Address Book
-Route::get('/address-book', 'AddressBookController@index')->name('webmail.address-book.index');
-Route::get('/address-book/create/{email?}/{name?}', 'AddressBookController@create')->name('webmail.address-book.create');
-Route::post('/address-book', 'AddressBookController@store')->name('webmail.address-book.store');
-Route::get('/address-book/{entry}', 'AddressBookController@show')->name('webmail.address-book.show');
-Route::get('/address-book/{entry}/edit', 'AddressBookController@edit')->name('webmail.address-book.edit');
-Route::put('/address-book/{entry}', 'AddressBookController@update')->name('webmail.address-book.update');
-Route::delete('/address-book/{entry}', 'AddressBookController@destroy')->name('webmail.address-book.destroy');
+Route::get('/contacts', 'AddressBookController@index')->name('webmail.address-book.index');
+Route::get('/contacts/create/{email?}/{name?}', 'AddressBookController@create')->name('webmail.address-book.create');
+Route::post('/contacts', 'AddressBookController@store')->name('webmail.address-book.store');
+Route::get('/contacts/{entry}', 'AddressBookController@show')->name('webmail.address-book.show');
+Route::get('/contacts/{entry}/edit', 'AddressBookController@edit')->name('webmail.address-book.edit');
+Route::put('/contacts/{entry}', 'AddressBookController@update')->name('webmail.address-book.update');
+Route::delete('/contacts/{entry}', 'AddressBookController@destroy')->name('webmail.address-book.destroy');
 
 });

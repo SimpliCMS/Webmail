@@ -29,7 +29,7 @@
                 <a href="{{ route('webmail.mailbox', 'INBOX') }}" class="{{ $selectedFolder && $selectedFolder->name === 'INBOX' ? 'text-white' : '' }}">
                     {{ ucfirst(strtolower($inboxFolder->name)) }}
                 </a>
-                <span class="badge bg-primary">{{ $inboxFolder->search()->unseen()->setFetchBody(false)->count() }}</span>
+                <span class="badge bg-primary folder-count" data-folder="{{ $inboxFolder->name }}"></span>
             </li>
             @endif
 
@@ -42,10 +42,10 @@
                 <a href="{{ route('webmail.mailbox', 'Sent') }}" class="{{ $selectedFolder && $selectedFolder->name === 'Sent' ? 'text-white' : '' }}">
                     {{ $sentFolder->name }}
                 </a>
-                <span class="badge bg-primary">{{ $sentFolder->search()->unseen()->setFetchBody(false)->count() }}</span>
+                <span class="badge bg-primary folder-count" data-folder="{{ $sentFolder->name }}"></span>
             </li>
             @endif
-            
+
             <!-- Drafts -->
             @php
             $draftsFolder = $sortedFolders->where('name', 'Drafts')->first();
@@ -55,7 +55,7 @@
                 <a href="{{ route('webmail.mailbox', 'Drafts') }}" class="{{ $selectedFolder && $selectedFolder->name === 'Drafts' ? 'text-white' : '' }}">
                     {{ $draftsFolder->name }}
                 </a>
-                <span class="badge bg-primary">{{ $draftsFolder->search()->unseen()->setFetchBody(false)->count() }}</span>
+                <span class="badge bg-primary folder-count" data-folder="{{ $draftsFolder->name }}"></span>
             </li>
             @endif
 
@@ -68,7 +68,7 @@
                 <a href="{{ route('webmail.mailbox', 'Junk') }}" class="{{ $selectedFolder && $selectedFolder->name === 'Junk' ? 'text-white' : '' }}">
                     {{ $junkFolder->name }}
                 </a>
-                <span class="badge bg-primary">{{ $junkFolder->search()->unseen()->setFetchBody(false)->count() }}</span>
+                <span class="badge bg-primary folder-count" data-folder="{{ $junkFolder->name }}"></span>
             </li>
             @endif
 
@@ -81,12 +81,12 @@
                 <a href="{{ route('webmail.mailbox', 'Trash') }}" class="{{ $selectedFolder && $selectedFolder->name === 'Trash' ? 'text-white' : '' }}">
                     {{ $trashFolder->name }}
                 </a>
-                <span class="badge bg-primary">{{ $trashFolder->search()->unseen()->setFetchBody(false)->count() }}</span>
+                <span class="badge bg-primary folder-count" data-folder="{{ $trashFolder->name }}"></span>
             </li>
             @endif
 
             <!-- Other folders -->
-            @foreach ($sortedFolders as $folder)
+            @foreach ($sortedFolders->sortBy('name') as $folder)
             @if (!in_array($folder->name, ['INBOX', 'Sent', 'Drafts', 'Junk', 'Trash']))
             <li class="list-group-item {{ $selectedFolder && $folder->name === $selectedFolder->name ? 'active' : '' }}">
                 <div class="d-flex justify-content-between align-items-center">
@@ -94,12 +94,14 @@
                         <a href="{{ route('webmail.mailbox', $folder->name) }}" class="{{ $selectedFolder && $folder->name === $selectedFolder->name ? 'text-white' : '' }}">
                             {{ $folder->name }}
                         </a>
-                        <span class="badge bg-primary">{{ $folder->search()->unseen()->setFetchBody(false)->count() }}</span>
+                        <span class="badge bg-primary folder-count" data-folder="{{ $folder->name }}"></span>
                     </div>
+                    @if($folder->name !== 'Archive')
                     <form id="delete-form" action="{{ route('webmail.deleteFolder', ['targetFolder' => $folder->name]) }}" method="POST" style="display:inline;">
                         @csrf
                         <button href="#" type="submit" name="targetFolder" value="{{ $folder->name }}" class="btn btn-link p-0 m-0 border-0 shadow-none delete-link {{ $selectedFolder && $folder->name === $selectedFolder->name ? 'text-white' : '' }}">Delete</button>
                     </form>
+                    @endif
                 </div>
             </li>
             @endif
@@ -114,12 +116,44 @@
 </div>
 @push('scripts')
 <script>
-    $(document).ready(function () {
-        $('.add-folder-link').click(function (e) {
-            e.preventDefault();
-            $(this).hide();
-            $('.add-folder-form').removeClass('d-none');
-        });
+$(document).ready(function () {
+  fetchFolderCounts();
+
+  // Fetch folder counts
+  function fetchFolderCounts() {
+    $('.folder-count').each(function () {
+      var folderCountElement = $(this);
+      var folderName = folderCountElement.data('folder');
+      var currentCount = parseInt(folderCountElement.text());
+
+      $.ajax({
+        url: '/admin/mail/mailbox/' + folderName + '/count',
+        type: 'GET',
+        dataType: 'json',
+        success: function (response) {
+          var newCount = response.count;
+
+          // Only update the count if it's a valid number and not zero
+          if (!isNaN(newCount) && newCount !== 0) {
+            folderCountElement.text(newCount);
+          }
+        },
+        error: function () {
+          // Keep the previous count if there's an error
+          folderCountElement.text(currentCount);
+        }
+      });
+    });
+  }
+
+  // Update folder counts every 5 seconds
+  setInterval(fetchFolderCounts, 20000);
+});
+
+    $('.add-folder-link').click(function (e) {
+        e.preventDefault();
+        $(this).hide();
+        $('.add-folder-form').removeClass('d-none');
     });
 </script>
 @endpush

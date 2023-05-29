@@ -4,6 +4,7 @@ namespace Modules\Webmail\Http\Controllers\Admin;
 
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Webklex\IMAP\Facades\Client;
 use Webklex\IMAP\Message;
 use Webklex\IMAP\Exceptions\ImapServerErrorException;
@@ -17,6 +18,7 @@ use PHPMailer\PHPMailer\SMTP;
 use Modules\Webmail\Models\Account;
 use Modules\Webmail\Models\AddressBook;
 use Konekt\Gears\Facades\Preferences;
+use Laravolt\Avatar\Facade as Avatar;
 use Modules\Core\Http\Controllers\Controller;
 
 class WebmailController extends Controller {
@@ -105,6 +107,27 @@ class WebmailController extends Controller {
         } else {
             return view('webmail-admin::mail.mailbox', compact('folders', 'selectedFolder', 'messages', 'folder', 'activeMessageId'));
         }
+    }
+
+    public function pollFolders($folderName) {
+        // Get all the folders
+        $folders = $this->imapClient->getFolders();
+
+        $folderCounts = [];
+
+        // Iterate over the folders
+        foreach ($folders as $folder) {
+            $name = $folder->name;
+
+            // Get the unseen message count for each folder
+            $messageCount = $folder->query()->unseen()->setFetchBody(false)->count();
+
+            // Store the folder name and count in the array
+            $folderCounts[$name] = $messageCount;
+        }
+
+        // Return the folder counts for the requested folder as JSON response
+        return response()->json(['count' => $folderCounts[$folderName] ?? 0]);
     }
 
     /**
@@ -231,14 +254,24 @@ class WebmailController extends Controller {
         }
     }
 
-    public function markAsRead($messageId) {
-        $message = $this->imapClient->getFolder('INBOX')->query()->find($messageId);
+    public function markAsRead($folder, $messageId) {
+        $folder = $this->imapClient->getFolder($folder);
 
-        if (!$message) {
-            return response()->json(['error' => 'Message not found'], 404);
-        }
+        // Get the message by UID
+        $message = $folder->messages()->getMessageByUid($messageId);
 
-        $message->markAsRead();
+        $message->getFlag('SEEN');
+
+        return response()->json(['success' => true]);
+    }
+
+    public function markAsUnRead($folder, $messageId) {
+        $folder = $this->imapClient->getFolder($folder);
+
+        // Get the message by UID
+        $message = $folder->messages()->getMessageByUid($messageId);
+
+        $message->setFlag('UNSEEN');
 
         return response()->json(['success' => true]);
     }
@@ -355,7 +388,7 @@ class WebmailController extends Controller {
         }
     }
 
-    public function trash($folder, $messageId) {
+    public function trash(Request $request, $folder, $messageId) {
         $folder = $this->imapClient->getFolder($folder);
 
         // Get the message by UID
@@ -367,9 +400,7 @@ class WebmailController extends Controller {
     }
 
     public function delete($folder, $messageId) {
-        $folders = $this->imapClient->getFolders();
         $folder = $this->imapClient->getFolder($folder);
-        $selectedFolder = $folders->where('name', $folder)->first();
 
         //Get all Messages of the current Mailbox $folder
         /** @var \Webklex\PHPIMAP\Support\MessageCollection $messages */

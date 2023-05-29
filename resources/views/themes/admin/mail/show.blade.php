@@ -1,7 +1,7 @@
 @extends('webmail-admin::layouts.mail', ['folders' => $folders])
 
 @section('content')
-<div class="card d-flex flex-column">
+<div class="card d-flex flex-column" id="message-content">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5>{{ $message->subject }}</h5>
 
@@ -15,17 +15,17 @@
                     @php
                     $currentFolder = request()->route('folder');
                     $sortedFolders = $folders->reject(function ($folder) use ($currentFolder) {
-                    return in_array($folder->name, [$currentFolder, 'Sent', 'Trash']);
+                        return in_array($folder->name, [$currentFolder, 'Sent', 'Trash']);
                     })->sortBy(function ($folder) {
-                    switch ($folder->name) {
-                    case 'INBOX':
-                    return 1; // Sort INBOX first
-                    case 'Drafts':
-                    case 'Junk':
-                    return 2; // Sort Drafts and Junk next
-                    default:
-                    return 3; // Sort other folders last
-                    }
+                        switch ($folder->name) {
+                            case 'INBOX':
+                                return 1; // Sort INBOX first
+                            case 'Drafts':
+                            case 'Junk':
+                                return 2; // Sort Drafts and Junk next
+                            default:
+                                return 3; // Sort other folders last
+                        }
                     });
                     @endphp
 
@@ -60,7 +60,7 @@
 
                     {{-- Display other folders --}}
                     @foreach ($sortedFolders->reject(function ($folder) {
-                    return in_array($folder->name, ['INBOX', 'Drafts', 'Junk']);
+                        return in_array($folder->name, ['INBOX', 'Drafts', 'Junk']);
                     })->sortBy('name') as $folder)
                     <form action="{{ route('webmail.move', ['folder' => $currentFolder, 'messageId' => $message->getUid(), 'targetFolder' => $folder->name]) }}" method="POST" style="display:inline;">
                         @csrf
@@ -73,15 +73,14 @@
             </div>
 
 
-            <a href="{{ route('webmail.reply', ['folder' => request()->route('folder'), 'messageId' => $message->getUid()]) }}" class="btn btn-primary me-2"><i class="fa-sharp fa-solid fa-reply"></i> Reply</a>
-            <a href="{{ route('webmail.forward', ['folder' => request()->route('folder'), 'messageId' => $message->getUid()]) }}" class="btn btn-primary me-2"><i class="fa-sharp fa-solid fa-share"></i> Forward</a>
+            <a href="{{ route('webmail.reply', ['folder' => request()->route('folder'), 'messageId' => $message->getUid()]) }}" class="btn btn-primary me-2"><i class="fas fa-reply"></i> Reply</a>
+            <a href="{{ route('webmail.forward', ['folder' => request()->route('folder'), 'messageId' => $message->getUid()]) }}" class="btn btn-primary me-2"><i class="fas fa-share"></i> Forward</a>
 
             @if(request()->route('folder') !== 'Trash')
-            <form action="{{ route('webmail.trash', ['folder' => request()->route('folder'), 'messageId' => $message->getUid()]) }}" method="POST" style="display:inline;">
+            <form action="{{ route('webmail.trash', ['folder' => request()->route('folder'), 'messageId' => $message->getUid()]) }}" method="POST" style="display:inline;" class="trash-form">
                 @csrf
-                @method('POST')
-                <button type="submit" class="btn btn-danger">
-                    <i class="fa-solid fa-trash"></i> Trash
+                <button id="trash-button" type="submit" class="btn btn-danger trash-button">
+                    <i class="fas fa-trash"></i> Trash
                 </button>
             </form>
             @else
@@ -89,7 +88,7 @@
                 @csrf
                 @method('POST')
                 <button type="submit" class="btn btn-danger">
-                    <i class="fa-solid fa-trash"></i> Delete
+                    <i class="fas fa-trash"></i> Delete
                 </button>
             </form>
             @endif
@@ -97,8 +96,17 @@
     </div>
 
     <div class="card-body flex-grow-1">
-        <p>From: {{ $message->getFrom()[0]->mail }}</p>
-        <p>To: {{ $message->getTo()[0]->mail }}</p>
+        <div class="details-container">
+            <div class="avatar-container">
+                <img class="avatar" src="{{ getBimiLogo($message->getFrom()[0]->mail, $message->getFrom()[0]->personal) }}" alt="Avatar">
+            </div>
+            <div class="details">
+                <p>From: {{ $message->getFrom()[0]->full }}&nbsp;<a href="{{ route('webmail.address-book.create', ['email' => $message->getFrom()[0]->mail, 'name' => $message->getFrom()[0]->personal]) }}">
+                    <i class="fas fa-address-book"></i> Add to Contacts
+                </a></p>
+                <p>To: {{ $message->getTo()[0]->full }}</p>
+            </div>
+        </div>
         <p>
             @php
             $messageDate = \Carbon\Carbon::parse($message->getDate());

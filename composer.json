@@ -21,6 +21,9 @@
     "autoload": {
         "psr-4": {
             "Modules\\Webmail\\": ""
-        }
+        },
+        "files": [
+            "Helpers/helper.php" 
+        ]
     }
 }

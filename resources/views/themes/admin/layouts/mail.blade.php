@@ -4,42 +4,12 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>@hasSection('title')@yield('title') &middot; @endif{{ config('app.name', 'SimpliCMS') }}</title>
+        @include('layouts._favicons')
         <link href="{{ themes('css/bootstrap.css') }}" rel="stylesheet">
         @stack('style')
         <link href="{{ themes('css/custom.css') }}" rel="stylesheet">
-        <style>
-            .message-container {
-                position: relative;
-                width: 100%;
-                padding-bottom: 65%; /* Adjust the aspect ratio based on your needs */
-                overflow: hidden;
-            }
+        <link href="{{ url('modules/Webmail/resources/assets/css/mail.css') }}" rel="stylesheet">
 
-            .message-container iframe {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                border: none;
-            }
-
-            .list-group-item-action:active {
-                color: #fff;
-                background-color: #665E77;
-            }
-            .list-group-item .delete-link {
-                display: none;
-            }
-
-            .list-group-item:hover .delete-link {
-                display: inline;
-            }
-
-            .delete-link {
-                margin-left: auto;
-            }
-        </style>
     </head>
     <body>
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary">

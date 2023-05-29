@@ -7,6 +7,7 @@
         <link href="{{ themes('css/bootstrap.css') }}" rel="stylesheet">
         @stack('style')
         <link href="{{ themes('css/custom.css') }}" rel="stylesheet">
+        <link href="{{ url('modules/Webmail/resources/assets/css/mail.css') }}" rel="stylesheet">
     </head>
     <body>
         <nav class="navbar navbar-expand-lg navbar-dark bg-primary">

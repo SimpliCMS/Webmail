@@ -11,7 +11,7 @@ class AddressBookEntry extends Model {
 
     protected $table = 'address_books_entries';
     protected $fillable = [
-        'addressbook_id',
+        'address_book_id',
         'name',
         'email',
         'phone',
