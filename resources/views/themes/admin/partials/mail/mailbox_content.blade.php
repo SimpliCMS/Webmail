@@ -21,7 +21,7 @@
                         <i class="far fa-envelope {{ ($message->hasFlag('\\Seen') && $activeMessageId == $message->getUid()) ? 'text-white' : ($message->hasFlag('\\Seen') ? 'seen text-muted' : 'unseen text-primary') }} me-2" data-message-id="{{ $message->getUid() }}"></i>                        
                         <div class="avatar-container"> <img src="{{ getLogo($message->getFrom()[0]->mail, $message->getFrom()[0]->personal) }}" alt="Logo/Avatar" class="avatar" style="margin-right: 10px;"></div>
                         <div>
-                            <div>{{ $message->subject }}</div>
+                            <div>{{ Str::limit($message->subject, 40) }}</div>
                             <div>{{ $message->getFrom()[0]->mail }}</div>
                         </div>
                     </div>

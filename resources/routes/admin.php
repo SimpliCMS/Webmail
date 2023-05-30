@@ -19,7 +19,7 @@ Route::get('/mailbox', function () {
 })->name('webmail.mailbox.default');
 Route::get('/mailbox/{folder?}', 'WebmailController@mailbox')->name('webmail.mailbox');
 Route::get('/message/content', 'WebmailController@getMessageContent')->name('webmail.message.content');
-Route::get('/mailbox/{folderName}/count', 'WebmailController@pollFolders')->name('webmail.pollFolders');
+Route::get('/mailbox/count/{folderName}', 'WebmailController@pollFolders')->name('webmail.pollFolders');
 Route::get('/mailbox/{folder?}/{messageId}', 'WebmailController@show')->name('webmail.show');
 Route::post('/webmail/add-folder', 'WebmailController@addFolder')->name('webmail.addFolder');
 Route::post('/webmail/delete-folder/{targetFolder}', 'WebmailController@deleteFolder')->name('webmail.deleteFolder');
@@ -29,9 +29,12 @@ Route::get('/forward/{folder?}/{messageId}', 'WebmailController@forward')->name(
 Route::post('/send', 'WebmailController@send')->name('webmail.send');
 Route::post('/reply/{originalMessage}', 'WebmailController@sendReply')->name('webmail.sendReply');
 Route::post('/move/{folder?}/{messageId}/{targetFolder}', 'WebmailController@move')->name('webmail.move');
-Route::post('/trash/{folder?}/{messageId}', 'WebmailController@trash')->name('webmail.trash');
-Route::post('/delete/{folder?}/{messageId}', 'WebmailController@delete')->name('webmail.delete');
+Route::post('/trash', 'WebmailController@trash')->name('webmail.trash');
+Route::post('/delete', 'WebmailController@delete')->name('webmail.delete');
 
+
+Route::get('/mailbox.js', 'ScriptController@mailboxJS')->name('webmail.script.mailbox');
+Route::get('/sidebar.js', 'ScriptController@sidebarJS')->name('webmail.script.sidebar');
 
 // View Address Book
 Route::get('/contacts', 'AddressBookController@index')->name('webmail.address-book.index');

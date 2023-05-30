@@ -77,18 +77,21 @@
             <a href="{{ route('webmail.forward', ['folder' => request()->route('folder'), 'messageId' => $message->getUid()]) }}" class="btn btn-primary me-2"><i class="fas fa-share"></i> Forward</a>
 
             @if(request()->route('folder') !== 'Trash')
-            <form action="{{ route('webmail.trash', ['folder' => request()->route('folder'), 'messageId' => $message->getUid()]) }}" method="POST" style="display:inline;" class="trash-form">
+            <form id="trash-form" data-action="{{ route('webmail.trash') }}" method="POST" style="display:inline;" class="trash-form">
                 @csrf
-                <button id="trash-button" type="submit" class="btn btn-danger trash-button">
+                <input type="hidden" name="folder" value="{{ request()->route('folder') }}" />
+                <input type="hidden" name="messageId" value="{{ $message->getUid() }}" />
+                <button id="trash-button" type="button" class="btn btn-danger trash-button">
                     <i class="fas fa-trash"></i> Trash
                 </button>
             </form>
             @else
-            <form action="{{ route('webmail.delete', ['folder' => request()->route('folder'), 'messageId' => $message->getUid()]) }}" method="POST" style="display:inline;">
+            <form id="delete-form" data-action="{{ route('webmail.delete') }}" method="POST" style="display:inline;" class="delete-form">
                 @csrf
-                @method('POST')
-                <button type="submit" class="btn btn-danger">
-                    <i class="fas fa-trash"></i> Delete
+                <input type="hidden" name="folder" value="{{ request()->route('folder') }}" />
+                <input type="hidden" name="messageId" value="{{ $message->getUid() }}" />
+                <button id="delete-button" type="button" class="btn btn-danger delete-button">
+                    <i class="fas fa-trash"></i> Trash
                 </button>
             </form>
             @endif

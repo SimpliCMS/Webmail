@@ -388,31 +388,37 @@ class WebmailController extends Controller {
         }
     }
 
-    public function trash(Request $request, $folder, $messageId) {
-        $folder = $this->imapClient->getFolder($folder);
+    public function trash(Request $request) {
+        $folder = $this->imapClient->getFolder($request->folder);
 
         // Get the message by UID
-        $message = $folder->messages()->getMessageByUid($messageId);
+        $message = $folder->messages()->getMessageByUid($request->messageId);
 
         $message->move($folder_path = 'Trash');
 
-        return redirect()->back()->with('success', 'Email moved to Trash!');
+        if ($request->ajax()) {
+            // Return a JSON response for Ajax requests
+            return response()->json(['message' => 'Email moved to Trash!']);
+        } else {
+            // Redirect back for regular form submissions
+            return redirect()->back()->with('success', 'Email moved to Trash!');
+        }
     }
 
-    public function delete($folder, $messageId) {
-        $folder = $this->imapClient->getFolder($folder);
+    public function delete(Request $request) {
+        $folder = $this->imapClient->getFolder($request->folder);
 
-        //Get all Messages of the current Mailbox $folder
-        /** @var \Webklex\PHPIMAP\Support\MessageCollection $messages */
-        $message = $folder->query()->getMessageByUid($messageId);
+        $message = $folder->messages()->getMessageByUid($request->messageId);
 
-        if ($message->getUid() == $messageId) {
-            $message->delete();
+        $message->delete();
+
+        if ($request->ajax()) {
+            // Return a JSON response for Ajax requests
+            return response()->json(['message' => 'Email deleted']);
         } else {
-            
+            // Redirect back for regular form submissions
+            return redirect()->back()->with('success', 'Email deleted');
         }
-
-        return redirect()->back()->with('success', 'Email sent successfully!');
     }
 
 }
