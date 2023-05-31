@@ -70,7 +70,7 @@
             loadMailboxPoll(folder, nextMessageId);
             } else {
             loadMailboxPoll(folder);
-            $('#message-content-placeholder').replaceWith('<div class="card" id="message-content">\n\
+            $('#message-content-placeholder').html('<div class="card" id="message-content">\n\
     <div class="card-header">Message</div>\n\
     <div class="card-body">\n\
         <p class="text-center" style="font-size: 30px;">Select a message to read</p>\n\
@@ -120,7 +120,7 @@
             loadMailboxPoll(folder, nextMessageId);
             } else {
             loadMailboxPoll(folder);
-            $('#message-content-placeholder').replaceWith('<div class="card" id="message-content">\n\
+            $('#message-content-placeholder').html('<div class="card" id="message-content">\n\
     <div class="card-header">Message</div>\n\
     <div class="card-body">\n\
         <p class="text-center" style="font-size: 30px;">Select a message to read</p>\n\
@@ -174,7 +174,7 @@
             loadMailboxPoll(folder, nextMessageId);
             } else {
             loadMailboxPoll(folder);
-            $('#message-content-placeholder').replaceWith('<div class="card" id="message-content">\n\
+            $('#message-content-placeholder').html('<div class="card" id="message-content">\n\
     <div class="card-header">Message</div>\n\
     <div class="card-body">\n\
         <p class="text-center" style="font-size: 30px;">Select a message to read</p>\n\
