@@ -70,6 +70,7 @@
                     // Handle the success response
                     // You can display a success message or perform any additional actions
                     console.log('Email moved to Trash!');
+                    $('.message-link.active').remove();
                     $('.message-link[data-message-id="' + nextMessageId + '"]').addClass('active');
                     loadMessage(folder, nextMessageId);
                     fetchFolderCounts();
@@ -106,6 +107,7 @@
                     // Handle the success response
                     // You can display a success message or perform any additional actions
                     console.log('Email Deleted!');
+                    $('.message-link.active').remove();
                     $('.message-link[data-message-id="' + nextMessageId + '"]').addClass('active');
                     loadMessage(folder, nextMessageId);
                     fetchFolderCounts();
@@ -119,8 +121,49 @@
                     console.error('Error deleting email!');
                 }
             });
-        });
+        });       
+@foreach($folders as $folder)
 
+        $(document).on('click', '#{{ strtolower($folder->name) }}-button', function () {
+            var nextMessageId = $('.message-link.active').next().data('message-id');
+            var folder = $('[name="folder"]').val();
+            var targetFolder = $('[name="targetFolder"]').val();
+            var messageId = $('[name="messageId"]').val();
+            $.ajaxSetup({
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            });
+            $.ajax({
+                url: $('#{{ strtolower($folder->name) }}-form').data('action'),
+                type: 'POST',
+                data: {
+                    "_token": "{{ csrf_token() }}",
+                    folder: folder,
+                    targetFolder: targetFolder,
+                    messageId: messageId,
+                },
+                success: function (response) {
+                    // Handle the success response
+                    // You can display a success message or perform any additional actions
+                    console.log('Email moved to ' + targetFolder + '!');
+                    $('.message-link.active').remove();
+                    $('.message-link[data-message-id="' + nextMessageId + '"]').addClass('active');
+                    loadMessage(folder, nextMessageId);
+                    fetchFolderCounts();
+                    loadMailboxPoll(folder, nextMessageId);
+                    // Optionally, you can redirect to the previous page
+                    // window.location.href = document.referrer;
+                },
+                error: function (xhr) {
+                    // Handle the error response
+                    // You can display an error message or perform any additional actions
+                    console.error('Error moving email to ' + targetFolder + '!');
+                }
+            });
+        });
+        
+@endforeach
 // Function to load mailbox via AJAX
         function loadMailbox(folder) {
             $.ajax({

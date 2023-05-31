@@ -23,8 +23,8 @@ use Modules\Core\Http\Controllers\Controller;
 
 class WebmailController extends Controller {
 
-    private $imapClient;
-    private $user;
+    protected $user;
+    protected $imapClient;
 
     public function __construct() {
         $this->middleware(function ($request, $next) {
@@ -196,22 +196,21 @@ class WebmailController extends Controller {
         return view('webmail-admin::mail.forward', compact('folders', 'selectedFolder', 'fromEmail', 'user', 'message'));
     }
 
-    public function move($folder, $messageId, $targetFolder) {
-        $folders = $this->imapClient->getFolders();
-        $folder = $this->imapClient->getFolder($folder);
-        $selectedFolder = $folders->where('name', $folder)->first();
+    public function move(Request $request) {
+        $folder = $this->imapClient->getFolder($request->folder);
 
         // Get the target folder
         // Get the message
-        $message = $folder->query()->getMessageByUid($messageId);
+        $message = $folder->messages()->getMessageByUid($request->messageId);
 
-        if ($message->getUid() == $messageId) {
-            $message->move($targetFolder);
+        $message->move($request->targetFolder);
+        if ($request->ajax()) {
+            // Return a JSON response for Ajax requests
+            return response()->json(['message' => 'Message moved successfully!']);
         } else {
-            // Handle error or display a message
+            // Redirect back for regular form submissions
+           return redirect()->back()->with('success', 'Message moved successfully!');
         }
-
-        return redirect()->back()->with('success', 'Message moved successfully!');
     }
 
     public function addFolder(Request $request) {

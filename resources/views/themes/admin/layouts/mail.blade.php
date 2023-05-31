@@ -76,7 +76,6 @@
         <script src="{{ themes('js/alpine.js') }}"></script>
         <script src="{{ themes('js/jquery.js') }}"></script>
         <script src="{{ themes('js/bootstrap.bundle.js') }}"></script>
-
         @stack('scripts')
     </body>
 </html>

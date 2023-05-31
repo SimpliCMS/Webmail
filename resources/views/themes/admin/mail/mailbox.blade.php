@@ -1,12 +1,10 @@
 @extends('webmail-admin::layouts.mail', ['folders' => $folders])
 
 @section('content')
-
 <div class="col-sm-12 col-md-4">
     <div id="mailbox-container">
         <div class="card" id="mailbox-container-content">
             <div class="card-header">{{ ucfirst(strtolower($selectedFolder->name)) }}</div>
-
             <div class="card-body">
                 <div class="list-group" style="max-height: 755px; overflow-y: auto;">
                     @if($selectedFolder)
@@ -16,7 +14,6 @@
                     return $message->getDate();
                     });
                     @endphp
-
                     @if($sortedMessages->count() > 0)
                     @foreach ($sortedMessages as $message)
                     <a href="javascript:void(0);"
@@ -58,7 +55,6 @@
                 </div>
             </div>
         </div>
-
     </div>
 </div>
 <div class="col-sm-12 col-md-6">
@@ -72,7 +68,6 @@
         </div>
     </div>
 </div>
-
 @push('scripts')
 <script src="{{ route('webmail.script.mailbox') }}"></script>
 @endpush

@@ -4,11 +4,12 @@ namespace Modules\Webmail\Http\Controllers\Admin;
 
 use Illuminate\Contracts\Support\Renderable;
 use Illuminate\Http\Request;
-use Modules\Core\Http\Controllers\Controller;
+use Modules\Webmail\Http\Controllers\Admin\WebmailController;
 
-class ScriptController extends Controller {
+class ScriptController extends WebmailController {
 
     public function __construct() {
+        parent::__construct();
         $this->middleware(function ($request, $next) {
             $response = $next($request);
             $response->header('Content-Type', 'application/javascript');
@@ -21,7 +22,8 @@ class ScriptController extends Controller {
      * @return Renderable
      */
     public function mailboxJS() {
-        return view('webmail-admin::script.mailbox');
+        $folders = $this->imapClient->getFolders();
+        return view('webmail-admin::script.mailbox', compact('folders'));
     }
 
     /**

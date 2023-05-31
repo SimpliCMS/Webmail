@@ -1,77 +1,83 @@
 <div class="card d-flex flex-column" id="message-content">
-    <div class="card-header d-flex justify-content-between align-items-center">
-        <h5>{{ $message->subject }}</h5>
+    <div class="card-header d-flex justify-content-end align-items-center">
+        <div class="ms-auto">
+            <button class="btn btn-primary dropdown-toggle me-2" type="button" id="moveToFolderDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                Move to Folder
+            </button>
+            <ul class="dropdown-menu" aria-labelledby="moveToFolderDropdown">
+                {{-- Sort the folders --}}
+                @php
+                $currentFolder = request()->route('folder');
+                $sortedFolders = $folders->reject(function ($folder) use ($currentFolder) {
+                return in_array($folder->name, [$currentFolder, 'Sent', 'Trash']);
+                })->sortBy(function ($folder) {
+                switch ($folder->name) {
+                case 'INBOX':
+                return 1; // Sort INBOX first
+                case 'Drafts':
+                case 'Junk':
+                return 2; // Sort Drafts and Junk next
+                default:
+                return 3; // Sort other folders last
+                }
+                });
+                @endphp
 
-        <div class="d-flex align-items-center">
-            <div class="dropdown me-2">
-                <button class="btn btn-primary dropdown-toggle" type="button" id="moveToFolderDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-                    Move to Folder
-                </button>
-                <ul class="dropdown-menu" aria-labelledby="moveToFolderDropdown">
-                    {{-- Sort the folders --}}
-                    @php
-                    $currentFolder = request()->route('folder');
-                    $sortedFolders = $folders->reject(function ($folder) use ($currentFolder) {
-                    return in_array($folder->name, [$currentFolder, 'Sent', 'Trash']);
-                    })->sortBy(function ($folder) {
-                    switch ($folder->name) {
-                    case 'INBOX':
-                    return 1; // Sort INBOX first
-                    case 'Drafts':
-                    case 'Junk':
-                    return 2; // Sort Drafts and Junk next
-                    default:
-                    return 3; // Sort other folders last
-                    }
-                    });
-                    @endphp
+                {{-- Display the sorted folders --}}
+                {{-- Display INBOX, Drafts, and Junk folders first --}}
+                @foreach ($sortedFolders->where('name', 'INBOX')->sortBy('name') as $folder)
+                <form id="inbox-form" data-action="{{ route('webmail.move') }}" method="POST" style="display:inline;" class="inbox-form">
+                    @csrf
+                    <input type="hidden" name="folder" value="{{ request()->route('folder') }}" />
+                    <input type="hidden" name="targetFolder" value="{{ $folder->name }}" />
+                    <input type="hidden" name="messageId" value="{{ $message->getUid() }}" />
+                    <li>
+                        <button id="inbox-button" class="dropdown-item" type="button">{{ ucfirst(strtolower($folder->name)) }}</button>
+                    </li>
+                </form>
+                @endforeach
 
-                    {{-- Display the sorted folders --}}
-                    {{-- Display INBOX, Drafts, and Junk folders first --}}
-                    @foreach ($sortedFolders->where('name', 'INBOX')->sortBy('name') as $folder)
-                    <form action="{{ route('webmail.move', ['folder' => $currentFolder, 'messageId' => $message->getUid(), 'targetFolder' => $folder->name]) }}" method="POST" style="display:inline;">
-                        @csrf
-                        <li>
-                            <button class="dropdown-item" type="submit" name="targetFolder" value="{{ $folder->name }}">{{ ucfirst(strtolower($folder->name)) }}</button>
-                        </li>
-                    </form>
-                    @endforeach
+                @foreach ($sortedFolders->where('name', 'Drafts')->sortBy('name') as $folder)
+                <form id="drafts-form" data-action="{{ route('webmail.move') }}" method="POST" style="display:inline;" class="drafts-form">
+                    @csrf
+                    <input type="hidden" name="folder" value="{{ request()->route('folder') }}" />
+                    <input type="hidden" name="targetFolder" value="{{ $folder->name }}" />
+                    <input type="hidden" name="messageId" value="{{ $message->getUid() }}" />
+                    <li>
+                        <button id="drafts-button" class="dropdown-item" type="button">{{ ucfirst(strtolower($folder->name)) }}</button>
+                    </li>
+                </form>
+                @endforeach
 
-                    @foreach ($sortedFolders->where('name', 'Drafts')->sortBy('name') as $folder)
-                    <form action="{{ route('webmail.move', ['folder' => $currentFolder, 'messageId' => $message->getUid(), 'targetFolder' => $folder->name]) }}" method="POST" style="display:inline;">
-                        @csrf
-                        <li>
-                            <button class="dropdown-item" type="submit" name="targetFolder" value="{{ $folder->name }}">{{ ucfirst(strtolower($folder->name)) }}</button>
-                        </li>
-                    </form>
-                    @endforeach
+                @foreach ($sortedFolders->where('name', 'Junk')->sortBy('name') as $folder)
+                <form id="junk-form" data-action="{{ route('webmail.move') }}" method="POST" style="display:inline;" class="junk-form">
+                    @csrf
+                    <input type="hidden" name="folder" value="{{ request()->route('folder') }}" />
+                    <input type="hidden" name="targetFolder" value="{{ $folder->name }}" />
+                    <input type="hidden" name="messageId" value="{{ $message->getUid() }}" />
+                    <li>
+                        <button id="junk-button" class="dropdown-item" type="button">{{ ucfirst(strtolower($folder->name)) }}</button>
+                    </li>
+                </form>
+                @endforeach
 
-                    @foreach ($sortedFolders->where('name', 'Junk')->sortBy('name') as $folder)
-                    <form action="{{ route('webmail.move', ['folder' => $currentFolder, 'messageId' => $message->getUid(), 'targetFolder' => $folder->name]) }}" method="POST" style="display:inline;">
-                        @csrf
-                        <li>
-                            <button class="dropdown-item" type="submit" name="targetFolder" value="{{ $folder->name }}">{{ ucfirst(strtolower($folder->name)) }}</button>
-                        </li>
-                    </form>
-                    @endforeach
-
-                    {{-- Display other folders --}}
-                    @foreach ($sortedFolders->reject(function ($folder) {
-                    return in_array($folder->name, ['INBOX', 'Drafts', 'Junk']);
-                    })->sortBy('name') as $folder)
-                    <form action="{{ route('webmail.move', ['folder' => $currentFolder, 'messageId' => $message->getUid(), 'targetFolder' => $folder->name]) }}" method="POST" style="display:inline;">
-                        @csrf
-                        <li>
-                            <button class="dropdown-item" type="submit" name="targetFolder" value="{{ $folder->name }}">{{ ucfirst(strtolower($folder->name)) }}</button>
-                        </li>
-                    </form>
-                    @endforeach
-                </ul>
-            </div>
-
-
-            <a href="{{ route('webmail.reply', ['folder' => request()->route('folder'), 'messageId' => $message->getUid()]) }}" class="btn btn-primary me-2"><i class="fas fa-reply"></i> Reply</a>
-            <a href="{{ route('webmail.forward', ['folder' => request()->route('folder'), 'messageId' => $message->getUid()]) }}" class="btn btn-primary me-2"><i class="fas fa-share"></i> Forward</a>
+                {{-- Display other folders --}}
+                @foreach ($sortedFolders->reject(function ($folder) {
+                return in_array($folder->name, ['INBOX', 'Drafts', 'Junk']);
+                })->sortBy('name') as $folder)
+                <form id="{{ strtolower($folder->name) }}-form" data-action="{{ route('webmail.move') }}" method="POST" style="display:inline;" class="{{ strtolower($folder->name) }}-form">
+                    @csrf
+                    <input type="hidden" name="folder" value="{{ request()->route('folder') }}" />
+                    <input type="hidden" name="targetFolder" value="{{ $folder->name }}" />
+                    <input type="hidden" name="messageId" value="{{ $message->getUid() }}" />
+                    <li>
+                        <button id="{{ strtolower($folder->name) }}-button" class="dropdown-item" type="button">{{ ucfirst(strtolower($folder->name)) }}</button>
+                    </li>
+                </form>
+                @endforeach
+            </ul>
+            <a href="{{ route('webmail.reply', ['folder' => request()->route('folder'), 'messageId' => $message->getUid()]) }}" class="btn btn-primary me-2" style="order: 2;"><i class="fas fa-reply"></i> Reply</a>
+            <a href="{{ route('webmail.forward', ['folder' => request()->route('folder'), 'messageId' => $message->getUid()]) }}" class="btn btn-primary me-2" style="order: 3;"><i class="fas fa-share"></i> Forward</a>
 
             @if(request()->route('folder') !== 'Trash')
             <form id="trash-form" data-action="{{ route('webmail.trash') }}" method="POST" style="display:inline;" class="trash-form">
@@ -88,7 +94,7 @@
                 <input type="hidden" name="folder" value="{{ request()->route('folder') }}" />
                 <input type="hidden" name="messageId" value="{{ $message->getUid() }}" />
                 <button id="delete-button" type="button" class="btn btn-danger delete-button">
-                    <i class="fas fa-trash"></i> Delete
+                    <i class="fas fa-trash"></i> Trash
                 </button>
             </form>
             @endif
@@ -101,6 +107,7 @@
                 <img class="avatar" src="{{ getLogo($message->getFrom()[0]->mail, $message->getFrom()[0]->personal) }}" alt="Avatar">
             </div>
             <div class="details">
+                <p><h5>{{ $message->subject }}</h5></p>
                 <p>From: {{ $message->getFrom()[0]->full }}&nbsp;<a href="{{ route('webmail.address-book.create', ['email' => $message->getFrom()[0]->mail, 'name' => $message->getFrom()[0]->personal]) }}">
                         <i class="fas fa-address-book"></i> Add to Contacts
                     </a></p>

@@ -35,9 +35,7 @@
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
                                id="account-dropdown-link">
                                 <img src="{{ Auth::user()->profile->getProfileAvatar() }}" class="rounded-circle" style="width: 20px;">
-
                                 {{ Auth::user()->name }}
-
                             </a>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="account-dropdown-link">
                                 <li><a class="dropdown-item" href="{{ route('admin.index') }}">{{ __('Return to Admin') }}</a></li>
@@ -53,13 +51,11 @@
                                 </li>
                             </ul>
                         </li>
-
                         <!-- Add more menu items as needed -->
                     </ul>
                 </div>
             </div>
         </nav>
-
         <div class="container-fluid mt-1">
             <a class="btn btn-primary" href="{{ route('webmail.address-book.create') }}" role="button">Add New Entry</a>
             <div class="row mt-1">
@@ -69,13 +65,11 @@
                 @yield('content')
             </div>
         </div>
-
         @stack('alpine')
         <!-- Scripts -->
         <script src="{{ themes('js/alpine.js') }}"></script>
         <script src="{{ themes('js/jquery.js') }}"></script>
         <script src="{{ themes('js/bootstrap.bundle.js') }}"></script>
-
         @stack('scripts')
     </body>
 </html>

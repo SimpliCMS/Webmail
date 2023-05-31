@@ -28,7 +28,7 @@ Route::get('/reply/{folder?}/{messageId}', 'WebmailController@reply')->name('web
 Route::get('/forward/{folder?}/{messageId}', 'WebmailController@forward')->name('webmail.forward');
 Route::post('/send', 'WebmailController@send')->name('webmail.send');
 Route::post('/reply/{originalMessage}', 'WebmailController@sendReply')->name('webmail.sendReply');
-Route::post('/move/{folder?}/{messageId}/{targetFolder}', 'WebmailController@move')->name('webmail.move');
+Route::post('/move', 'WebmailController@move')->name('webmail.move');
 Route::post('/trash', 'WebmailController@trash')->name('webmail.trash');
 Route::post('/delete', 'WebmailController@delete')->name('webmail.delete');
 
