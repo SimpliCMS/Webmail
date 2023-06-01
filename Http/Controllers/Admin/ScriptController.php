@@ -26,12 +26,4 @@ class ScriptController extends WebmailController {
         return view('webmail-admin::script.mailbox', compact('folders'));
     }
 
-    /**
-     * Display a listing of the resource.
-     * @return Renderable
-     */
-    public function sidebarJS() {
-        return view('webmail-admin::script.sidebar');
-    }
-
 }

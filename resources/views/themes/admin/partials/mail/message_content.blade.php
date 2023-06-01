@@ -14,6 +14,7 @@
                 switch ($folder->name) {
                 case 'INBOX':
                 return 1; // Sort INBOX first
+                case 'Archive':
                 case 'Drafts':
                 case 'Junk':
                 return 2; // Sort Drafts and Junk next
@@ -24,7 +25,7 @@
                 @endphp
 
                 {{-- Display the sorted folders --}}
-                {{-- Display INBOX, Drafts, and Junk folders first --}}
+                {{-- Display INBOX, Archive, Drafts, and Junk folders first --}}
                 @foreach ($sortedFolders->where('name', 'INBOX')->sortBy('name') as $folder)
                 <form id="inbox-form" data-action="{{ route('webmail.move') }}" method="POST" style="display:inline;" class="inbox-form">
                     @csrf
@@ -33,6 +34,18 @@
                     <input type="hidden" name="messageId" value="{{ $message->getUid() }}" />
                     <li>
                         <button id="inbox-button" class="dropdown-item" type="button">{{ ucfirst(strtolower($folder->name)) }}</button>
+                    </li>
+                </form>
+                @endforeach
+
+                @foreach ($sortedFolders->where('name', 'Archive')->sortBy('name') as $folder)
+                <form id="archive-form" data-action="{{ route('webmail.move') }}" method="POST" style="display:inline;" class="archive-form">
+                    @csrf
+                    <input type="hidden" name="folder" value="{{ request()->route('folder') }}" />
+                    <input type="hidden" name="targetFolder" value="{{ $folder->name }}" />
+                    <input type="hidden" name="messageId" value="{{ $message->getUid() }}" />
+                    <li>
+                        <button id="archive-button" class="dropdown-item" type="button">{{ ucfirst(strtolower($folder->name)) }}</button>
                     </li>
                 </form>
                 @endforeach
@@ -63,7 +76,7 @@
 
                 {{-- Display other folders --}}
                 @foreach ($sortedFolders->reject(function ($folder) {
-                return in_array($folder->name, ['INBOX', 'Drafts', 'Junk']);
+                return in_array($folder->name, ['INBOX', 'Archive', 'Drafts', 'Junk']);
                 })->sortBy('name') as $folder)
                 <form id="{{ strtolower($folder->name) }}-form" data-action="{{ route('webmail.move') }}" method="POST" style="display:inline;" class="{{ strtolower($folder->name) }}-form">
                     @csrf

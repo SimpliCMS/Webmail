@@ -19,7 +19,6 @@
             @php
             $sortedFolders = $folders->sortBy('name');
             @endphp
-
             <!-- INBOX -->
             @php
             $inboxFolder = $sortedFolders->where('name', 'INBOX')->first();
@@ -32,7 +31,6 @@
                 <span class="badge bg-primary folder-count" data-folder="{{ $inboxFolder->name }}"></span>
             </li>
             @endif
-
             <!-- Sent -->
             @php
             $sentFolder = $sortedFolders->where('name', 'Sent')->first();
@@ -45,7 +43,18 @@
                 <span class="badge bg-primary folder-count" data-folder="{{ $sentFolder->name }}"></span>
             </li>
             @endif
-
+            <!-- Archive -->
+            @php
+            $archiveFolder = $sortedFolders->where('name', 'Archive')->first();
+            @endphp
+            @if ($archiveFolder)
+            <li class="list-group-item {{ $selectedFolder && $selectedFolder->name === 'Archive' ? 'active' : '' }}">
+                <a href="{{ route('webmail.mailbox', 'Archive') }}" class="{{ $selectedFolder && $selectedFolder->name === 'Archive' ? 'text-white' : '' }}">
+                    {{ ucfirst(strtolower($archiveFolder->name)) }}
+                </a>
+                <span class="badge bg-primary folder-count" data-folder="{{ $archiveFolder->name }}"></span>
+            </li>
+            @endif
             <!-- Drafts -->
             @php
             $draftsFolder = $sortedFolders->where('name', 'Drafts')->first();
@@ -58,7 +67,6 @@
                 <span class="badge bg-primary folder-count" data-folder="{{ $draftsFolder->name }}"></span>
             </li>
             @endif
-
             <!-- Junk -->
             @php
             $junkFolder = $sortedFolders->where('name', 'Junk')->first();
@@ -71,7 +79,6 @@
                 <span class="badge bg-primary folder-count" data-folder="{{ $junkFolder->name }}"></span>
             </li>
             @endif
-
             <!-- Trash -->
             @php
             $trashFolder = $sortedFolders->where('name', 'Trash')->first();
@@ -84,10 +91,9 @@
                 <span class="badge bg-primary folder-count" data-folder="{{ $trashFolder->name }}"></span>
             </li>
             @endif
-
             <!-- Other folders -->
             @foreach ($sortedFolders->sortBy('name') as $folder)
-            @if (!in_array($folder->name, ['INBOX', 'Sent', 'Drafts', 'Junk', 'Trash']))
+            @if (!in_array($folder->name, ['INBOX', 'Sent', 'Archive', 'Drafts', 'Junk', 'Trash']))
             <li class="list-group-item {{ $selectedFolder && $folder->name === $selectedFolder->name ? 'active' : '' }}">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
@@ -106,8 +112,6 @@
             </li>
             @endif
             @endforeach
-
-
         </ul>
         @else
         <p>No folders found</p>

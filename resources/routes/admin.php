@@ -34,7 +34,6 @@ Route::post('/delete', 'WebmailController@delete')->name('webmail.delete');
 
 
 Route::get('/mailbox.js', 'ScriptController@mailboxJS')->name('webmail.script.mailbox');
-Route::get('/sidebar.js', 'ScriptController@sidebarJS')->name('webmail.script.sidebar');
 
 // View Address Book
 Route::get('/contacts', 'AddressBookController@index')->name('webmail.address-book.index');

@@ -17,6 +17,7 @@
                 switch ($folder->name) {
                 case 'INBOX':
                 return 1; // Sort INBOX first
+                case 'Archive':
                 case 'Drafts':
                 case 'Junk':
                 return 2; // Sort Drafts and Junk next
@@ -29,6 +30,15 @@
                 {{-- Display the sorted folders --}}
                 {{-- Display INBOX, Drafts, and Junk folders first --}}
                 @foreach ($sortedFolders->where('name', 'INBOX')->sortBy('name') as $folder)
+                <form action="{{ route('webmail.move', ['folder' => $currentFolder, 'messageId' => $message->getUid(), 'targetFolder' => $folder->name]) }}" method="POST" style="display:inline;">
+                    @csrf
+                    <li>
+                        <button class="dropdown-item" type="submit" name="targetFolder" value="{{ $folder->name }}">{{ ucfirst(strtolower($folder->name)) }}</button>
+                    </li>
+                </form>
+                @endforeach
+
+                @foreach ($sortedFolders->where('name', 'Archive')->sortBy('name') as $folder)
                 <form action="{{ route('webmail.move', ['folder' => $currentFolder, 'messageId' => $message->getUid(), 'targetFolder' => $folder->name]) }}" method="POST" style="display:inline;">
                     @csrf
                     <li>
@@ -57,7 +67,7 @@
 
                 {{-- Display other folders --}}
                 @foreach ($sortedFolders->reject(function ($folder) {
-                return in_array($folder->name, ['INBOX', 'Drafts', 'Junk']);
+                return in_array($folder->name, ['INBOX', 'Archive', 'Drafts', 'Junk']);
                 })->sortBy('name') as $folder)
                 <form action="{{ route('webmail.move', ['folder' => $currentFolder, 'messageId' => $message->getUid(), 'targetFolder' => $folder->name]) }}" method="POST" style="display:inline;">
                     @csrf
