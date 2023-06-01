@@ -53,6 +53,7 @@ $(document).ready(function () {
             url: $form.data('action'),
             type: 'POST',
             data: {
+                "_token": "{{ csrf_token() }}",
                 folder: folder,
                 messageId: messageId,
             },
@@ -101,7 +102,7 @@ $(document).ready(function () {
             url: $form.data('action'),
             type: 'POST',
             data: {
-                "_token":  $('meta[name="csrf-token"]').attr('content'),
+                "_token": "{{ csrf_token() }}",
                 folder: folder,
                 messageId: messageId,
             },
@@ -153,7 +154,7 @@ $(document).ready(function () {
                 url: $form.data('action'),
                 type: 'POST',
                 data: {
-                    "_token":  $('meta[name="csrf-token"]').attr('content'),
+                    "_token": "{{ csrf_token() }}",
                     folder: currentfolder,
                     targetFolder: targetFolder,
                     messageId: messageId,
@@ -194,7 +195,7 @@ $(document).ready(function () {
 // Function to load mailbox via AJAX
     function loadMailbox(folder) {
         $.ajax({
-            url: baseURL + "/admin/mail/mailbox/" + folder,
+            url: "{{ route('webmail.mailbox', '') }}" + '/' + folder,
             type: 'GET',
             dataType: 'html',
             cache: false,
@@ -209,7 +210,7 @@ $(document).ready(function () {
     </div>\n\
 </div>');
 // Update the browser URL without reloading the page
-                history.pushState(null, '', baseURL + "/admin/mail/mailbox/" + folder);
+                history.pushState(null, '', "{{ route('webmail.mailbox', '') }}" + '/' + folder);
             },
             error: function (xhr, status, error) {
                 console.error(error);
@@ -220,14 +221,14 @@ $(document).ready(function () {
     function loadMailboxPoll(folder, activeMessageId) {
         var activeMessageId = activeMessageId || $('.message-link.active').data('message-id'); // Get the active message ID
         $.ajax({
-            url: baseURL + "/admin/mail/mailbox/" + folder,
+            url: "{{ route('webmail.mailbox', '') }}" + '/' + folder,
             type: 'GET',
             dataType: 'html',
             cache: false,
             success: function (response) {
                 $('#mailbox-container').html(response);
 // Update the browser URL without reloading the page
-                history.pushState(null, '', baseURL + "/admin/mail/mailbox/" + folder);
+                history.pushState(null, '', "{{ route('webmail.mailbox', '') }}" + '/' + folder);
 // Set the active class for the previously active message item
                 $('.message-link[data-message-id="' + activeMessageId + '"]').addClass('active');
                 $('.unseen[data-message-id="' + activeMessageId + '"]').removeClass('text-primary');
@@ -240,7 +241,7 @@ $(document).ready(function () {
     }
 
     function loadMessage(folder, messageId) {
-        var url = baseURL + "/admin/mail/mailbox/" + folder + '/' + messageId;
+        var url = "{{ route('webmail.mailbox', '') }}" + '/' + folder + '/' + messageId;
         $.ajax({
             url: url,
             type: 'GET',
@@ -263,7 +264,7 @@ $(document).ready(function () {
             var folderName = folderCountElement.data('folder');
             var currentCount = parseInt(folderCountElement.text());
             $.ajax({
-                url: baseURL + "/admin/mail/mailbox/count/" + folderName,
+                url: "{{ route('webmail.pollFolders', '') }}" + '/' + folderName,
                 type: 'GET',
                 dataType: 'json',
                 success: function (response) {
@@ -308,6 +309,3 @@ $(document).ready(function () {
 // Set the interval to poll every 5 seconds (adjust the interval as needed)
     setInterval(pollMailbox, 20000);
 });
-
-
-

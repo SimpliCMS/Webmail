@@ -32,6 +32,9 @@ Route::post('/move', 'WebmailController@move')->name('webmail.move');
 Route::post('/trash', 'WebmailController@trash')->name('webmail.trash');
 Route::post('/delete', 'WebmailController@delete')->name('webmail.delete');
 
+
+Route::get('/mailbox.js', 'ScriptController@mailboxJS')->name('webmail.script.mailbox');
+
 // View Address Book
 Route::get('/contacts', 'AddressBookController@index')->name('webmail.address-book.index');
 Route::get('/contacts/create/{email?}/{name?}', 'AddressBookController@create')->name('webmail.address-book.create');

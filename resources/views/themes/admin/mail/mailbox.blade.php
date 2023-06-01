@@ -69,6 +69,6 @@
     </div>
 </div>
 @push('scripts')
-<script src="{{ url('modules/Webmail/resources/assets/js/mail.js') }}"></script>
+<script src="{{ route('webmail.script.mailbox') }}"></script>
 @endpush
 @endsection
