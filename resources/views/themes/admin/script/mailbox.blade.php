@@ -137,10 +137,8 @@ $(document).ready(function () {
             }
         });
     });
-@foreach($folders
-    as
-    $folder
-)
+
+@foreach($folders as $folder)
     $(document).on('click', '#{{ strtolower($folder->name) }}-button', function () {
         var $form = $('#{{ strtolower($folder->name) }}-form');
         var nextMessageId = $('.message-link.active').next().data('message-id');

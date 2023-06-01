@@ -20,6 +20,7 @@ use Modules\Webmail\Models\AddressBook;
 use Konekt\Gears\Facades\Preferences;
 use Laravolt\Avatar\Facade as Avatar;
 use Modules\Core\Http\Controllers\Controller;
+use Laracasts\Utilities\JavaScript\JavaScriptFacade as JavaScript;
 
 class WebmailController extends Controller {
 
@@ -27,6 +28,7 @@ class WebmailController extends Controller {
     protected $imapClient;
 
     public function __construct() {
+        parent::__construct();
         $this->middleware(function ($request, $next) {
             $this->user = Auth::user();
             $account = Client::account('default');
@@ -63,7 +65,9 @@ class WebmailController extends Controller {
         // Initialize your IMAP client and get the folder collection
 
         $folders = $this->imapClient->getFolders();
-
+        JavaScript::put([
+            'folders' => $folders
+        ]);
         $selectedFolder = $folders->where('name', $folder)->first();
         // Sort the folders and move selected mailbox to the top
         $folders = $folders->sortBy(function ($item) use ($selectedFolder) {

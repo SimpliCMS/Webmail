@@ -65,6 +65,7 @@
                 @yield('content')
             </div>
         </div>
+        @include('partials.layout._js-vars')
         @stack('alpine')
         <!-- Scripts -->
         <script src="{{ themes('js/alpine.js') }}"></script>
