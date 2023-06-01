@@ -49,6 +49,13 @@ class WebmailController extends Controller {
                     'account_id' => $webmailAccount->id,
                 ]);
             }
+            $folders = $this->imapClient->getFolders();
+            $folderNames = $folders->map(function ($folder) {
+                return $folder->name;
+            })->toArray();
+            JavaScript::put([
+                'folders' => $folderNames
+            ]);
             return $next($request);
         });
     }
@@ -65,9 +72,6 @@ class WebmailController extends Controller {
         // Initialize your IMAP client and get the folder collection
 
         $folders = $this->imapClient->getFolders();
-        JavaScript::put([
-            'folders' => $folders
-        ]);
         $selectedFolder = $folders->where('name', $folder)->first();
         // Sort the folders and move selected mailbox to the top
         $folders = $folders->sortBy(function ($item) use ($selectedFolder) {
