@@ -89,35 +89,35 @@ $(document).ready(function () {
         });
     });
     $(document).on('click', '#delete-button', function () {
-    var $form = $('#delete-form');
-            var nextMessageId = $('.message-link.active').next().data('message-id');
-            var folder = $form.find('[name="folder"]').val();
-            var messageId = $form.find('[name="messageId"]').val();
-            $.ajaxSetup({
+        var $form = $('#delete-form');
+        var nextMessageId = $('.message-link.active').next().data('message-id');
+        var folder = $form.find('[name="folder"]').val();
+        var messageId = $form.find('[name="messageId"]').val();
+        $.ajaxSetup({
             headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             }
-            });
-            $.ajax({
+        });
+        $.ajax({
             url: $form.data('action'),
-                    type: 'POST',
-                    data: {
-                    "_token": "{{ csrf_token() }}",
-                            folder: folder,
-                            messageId: messageId,
-                    },
-                    success: function (response) {
-                    // Handle the success response
-                    // You can display a success message or perform any additional actions
-                    console.log('Email Deleted!');
-                            $('.message-link.active').remove();
-                            if (nextMessageId) {
+            type: 'POST',
+            data: {
+                "_token": "{{ csrf_token() }}",
+                folder: folder,
+                messageId: messageId,
+            },
+            success: function (response) {
+                // Handle the success response
+                // You can display a success message or perform any additional actions
+                console.log('Email Deleted!');
+                $('.message-link.active').remove();
+                if (nextMessageId) {
                     $('.message-link[data-message-id="' + nextMessageId + '"]').addClass('active');
-                            loadMessage(folder, nextMessageId);
-                            loadMailboxPoll(folder, nextMessageId);
-                    } else {
+                    loadMessage(folder, nextMessageId);
+                    loadMailboxPoll(folder, nextMessageId);
+                } else {
                     loadMailboxPoll(folder);
-                            $('#message-content-placeholder').html('<div class="card" id="message-content">\n\
+                    $('#message-content-placeholder').html('<div class="card" id="message-content">\n\
     <div class="card-header">Message</div>\n\
     <div class="card-body">\n\
         <p class="text-center" style="font-size: 30px;">Select a message to read</p>\n\
@@ -125,19 +125,22 @@ $(document).ready(function () {
             <i class="fa-solid fa-envelope-open-text"></i></p>\n\
     </div>\n\
 </div>');
-                    }
-                    fetchFolderCounts();
-                            // Optionally, you can redirect to the previous page
-                            // window.location.href = document.referrer;
-                    },
-                    error: function (xhr) {
-                    // Handle the error response
-                    // You can display an error message or perform any additional actions
-                    console.error('Error deleting email!');
-                    }
-            });
-            });
-@foreach($folders as $folder)
+                }
+                fetchFolderCounts();
+                // Optionally, you can redirect to the previous page
+                // window.location.href = document.referrer;
+            },
+            error: function (xhr) {
+                // Handle the error response
+                // You can display an error message or perform any additional actions
+                console.error('Error deleting email!');
+            }
+        });
+    });
+@foreach($folders
+    as
+    $folder
+)
     $(document).on('click', '#{{ strtolower($folder->name) }}-button', function () {
         var $form = $('#{{ strtolower($folder->name) }}-form');
         var nextMessageId = $('.message-link.active').next().data('message-id');
@@ -189,17 +192,18 @@ $(document).ready(function () {
             }
         });
     });
+
     @endforeach
 // Function to load mailbox via AJAX
-            function loadMailbox(folder) {
-            $.ajax({
-                url: "{{ route('webmail.mailbox', '') }}" + '/' + folder,
-                type: 'GET',
-                dataType: 'html',
-                cache: false,
-                success: function (response) {
-                    $('#mailbox-container').html(response);
-                    $('#message-content-placeholder').html('<div class="card" id="message-content">\n\
+    function loadMailbox(folder) {
+        $.ajax({
+            url: "{{ route('webmail.mailbox', '') }}" + '/' + folder,
+            type: 'GET',
+            dataType: 'html',
+            cache: false,
+            success: function (response) {
+                $('#mailbox-container').html(response);
+                $('#message-content-placeholder').html('<div class="card" id="message-content">\n\
     <div class="card-header">Message</div>\n\
     <div class="card-body">\n\
         <p class="text-center" style="font-size: 30px;">Select a message to read</p>\n\
@@ -208,33 +212,33 @@ $(document).ready(function () {
     </div>\n\
 </div>');
 // Update the browser URL without reloading the page
-                    history.pushState(null, '', "{{ route('webmail.mailbox', '') }}" + '/' + folder);
-                },
-                error: function (xhr, status, error) {
-                    console.error(error);
-                }
-            });
+                history.pushState(null, '', "{{ route('webmail.mailbox', '') }}" + '/' + folder);
+            },
+            error: function (xhr, status, error) {
+                console.error(error);
             }
+        });
+    }
 
     function loadMailboxPoll(folder, activeMessageId) {
         var activeMessageId = activeMessageId || $('.message-link.active').data('message-id'); // Get the active message ID
         $.ajax({
-        url: "{{ route('webmail.mailbox', '') }}" + '/' + folder,
-                type: 'GET',
-                dataType: 'html',
-                cache: false,
-                success: function (response) {
+            url: "{{ route('webmail.mailbox', '') }}" + '/' + folder,
+            type: 'GET',
+            dataType: 'html',
+            cache: false,
+            success: function (response) {
                 $('#mailbox-container').html(response);
 // Update the browser URL without reloading the page
-                        history.pushState(null, '', "{{ route('webmail.mailbox', '') }}" + '/' + folder);
+                history.pushState(null, '', "{{ route('webmail.mailbox', '') }}" + '/' + folder);
 // Set the active class for the previously active message item
-                        $('.message-link[data-message-id="' + activeMessageId + '"]').addClass('active');
-                        $('.unseen[data-message-id="' + activeMessageId + '"]').removeClass('text-primary');
-                        $('.unseen[data-message-id="' + activeMessageId + '"]').addClass('text-white');
-                },
-                error: function (xhr, status, error) {
+                $('.message-link[data-message-id="' + activeMessageId + '"]').addClass('active');
+                $('.unseen[data-message-id="' + activeMessageId + '"]').removeClass('text-primary');
+                $('.unseen[data-message-id="' + activeMessageId + '"]').addClass('text-white');
+            },
+            error: function (xhr, status, error) {
                 console.error(error);
-                }
+            }
         });
     }
 
@@ -287,6 +291,7 @@ $(document).ready(function () {
         $(this).hide();
         $('.add-folder-form').removeClass('d-none');
     });
+
 // Function to retrieve the current folder from the URL
     function getCurrentFolderFromURL() {
         var url = window.location.pathname; // Get the current URL path
