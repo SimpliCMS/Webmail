@@ -33,5 +33,5 @@
         </div>
     </div>
 </div>
-@include('webmail-admin::partials.tinymce._editor', ['selector' => 'message','height' => '500'])
+
 @endsection

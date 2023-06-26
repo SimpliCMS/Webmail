@@ -51,6 +51,7 @@
                                 </li>
                             </ul>
                         </li>
+                        @include('partials.menu.color-mode')
                         <!-- Add more menu items as needed -->
                     </ul>
                 </div>
@@ -71,6 +72,7 @@
         <script src="{{ themes('js/alpine.js') }}"></script>
         <script src="{{ themes('js/jquery.js') }}"></script>
         <script src="{{ themes('js/bootstrap.bundle.js') }}"></script>
+        <script src="{{ themes('js/color-modes.js') }}"></script>
         @stack('scripts')
     </body>
 </html>

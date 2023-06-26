@@ -12,4 +12,5 @@ fastmail.com
 yandex.com
 mail.ru
 tutanota.com
+mailgun.net
 
